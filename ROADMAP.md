@@ -1,257 +1,286 @@
 # NöroTakip: İş Haritası
 
-Nörolojik hastalığı olan kişilerin (epilepsi, migren, MS, Parkinson vb.) semptomlarını, nöbetlerini ve ilaçlarını günlük olarak kaydedip bu verileri hekimleriyle paylaşabildiği bir mobil uygulama.
+**Nöroloji servisi, nöroloji yoğun bakım ve inme ünitesinde çalışan hemşire ve hekimler için cep rehberi.**
+Hastalıklar, tedaviler, ilaçlar ve prosedürler hakkında bilimsel kaynaklara dayalı bilgi sunar. Ayrıca NIHSS hesaplayıcı ve CPR zamanlayıcısı gibi klinikte kullanılan araçları içerir.
 
 > Bu belge yaşayan bir dokümandır. Kararlar netleştikçe güncellenir. `[ ]` yapılacak, `[x]` tamamlandı demektir.
 
 ---
 
-## Sade Anlatım: Nasıl Çalışacağız?
+## 1. Sade Anlatım
 
-**İş bölümü**
-- **Sen:** Uygulamanın ne yapması gerektiğini anlatırsın. Ekranları ve özellikleri dener, beğenip beğenmediğini söylersin.
-- **Claude:** Bütün teknik kararları verir, kodu yazar, uygulamayı derleyip telefonuna kurulabilir hale getirir, yaptığı her şeyi sade bir dille anlatır.
+### Uygulama ne yapacak?
+Telefonda taşınan, internet olmadan da çalışan bir **nöroloji başvuru kitabı ve klinik araç seti**. Hasta adı, TC kimlik numarası gibi **hiçbir kişisel veri tutulmayacak.**
 
-**Verilen teknik kararlar (ve neden)**
-| Konu | Karar | Sade açıklama |
-|---|---|---|
-| Uygulamanın yapılacağı araç | **Flutter** (Google, ücretsiz) | Tek seferde yazılan kod hem Android'de hem iPhone'da çalışır. |
-| Verilerin tutulacağı yer | **Önce sadece telefonda** | İlk sürümde sunucu yok. Bilgiler kullanıcının kendi telefonunda kalır. Ücretsizdir, en güvenli yoldur ve yasal yükü azaltır. Telefon kaybolursa veri gitmesin diye "yedek dosyası al" özelliği olacak. |
-| Uygulamanın derlenmesi | **GitHub Actions** (ücretsiz) | Her kod değişikliğinden sonra GitHub, telefona kurulabilen dosyayı (Android için APK) otomatik hazırlar. Sen sadece indirip kurarsın. |
-| Sunucu (ileride, gerekirse) | **Supabase** ücretsiz paketi | Hekimle paylaşım veya çoklu cihaz gerekirse eklenir. |
-
-**Maliyet**
-| Kalem | Ücret | Ne zaman gerekir? |
-|---|---|---|
-| Flutter, GitHub, kod yazımı ve test | Ücretsiz | Hemen |
-| Android telefona doğrudan kurup denemek | Ücretsiz | Hemen |
-| Google Play'de yayınlamak | Tek seferlik yaklaşık 25 $ | Herkese açmak istediğinde |
-| App Store'da (iPhone) yayınlamak | Yıllık yaklaşık 99 $ | iPhone kullanıcılarına açmak istediğinde |
-
-Mağaza ücretleri, uygulamayı herkese açmaya karar verene kadar gerekmez. Bu yüzden yol haritasında **önce Android** ile ilerleyeceğiz.
-
----
-
-## 0. Ürün Vizyonu
-
-**Sorun:** Hastalar nöbetlerini, ağrı ataklarını ve ilaç dozlarını çoğunlukla hatırlayarak ya da kâğıda not ederek takip ediyor. Kontrol muayenesinde hekime eksik ve dağınık bilgi ulaşıyor.
-
-**Çözüm:** Hızlı kayıt (tek dokunuşla nöbet veya atak), ilaç hatırlatıcı ve hekime gösterilebilen düzenli raporlar.
-
-**Hedef kullanıcılar**
-| Persona | İhtiyaç |
+### İş bölümü
+| Kim | Görevi |
 |---|---|
-| Hasta | Hızlı ve kolay kayıt, hatırlatıcılar, kendi gidişatını görmek |
-| Hasta yakını / bakım veren | Hasta adına kayıt girmek, acil durumda bilgilendirilmek |
-| Nörolog (ileriki faz) | Muayene öncesi özet rapor, eğilimler, ilaca uyum |
+| **Sen** (nöroloji hemşiresi, ürün sahibi) | Hangi bilgi ve aracın gerektiğini söylersin. Hazırlanan tıbbi içeriği kontrol edip onaylarsın. Uygulamayı deneyip geri bildirim verirsin. |
+| **Claude** (geliştirici) | Bütün teknik işleri yapar, kodu yazar. Tıbbi içeriğin ilk taslağını kılavuz ve makalelerden kaynak göstererek hazırlar. Yaptığı her şeyi sade dille anlatır. |
+| **Bir nörolog** (önerilir) | Senin onayından sonra içeriğe ikinci bir göz olarak bakar. |
 
-**Başarı ölçütleri (MVP)**
-- Aktif kullanıcıların %60'ı haftada en az 3 gün kayıt giriyor
-- İlaç hatırlatıcılarına uyum oranı %80'in üzerinde
-- Kullanıcıların en az %30'u bir PDF raporu dışa aktarıyor veya paylaşıyor
+### Çok önemli bir güvenlik kuralı
+Tıbbi bilgi yanlış olursa hastaya zarar verebilir. Bu yüzden şu kurallara uyacağız:
+1. Her bilgi parçasının altında **kaynağı** (kılavuz veya makale) ve **kanıt düzeyi** yazacak.
+2. Uygulamadaki her içerik kartında şu üç durumdan biri görünecek:
+   - 🟡 **Taslak:** Claude hazırladı, henüz kontrol edilmedi.
+   - 🟢 **Hemşire onaylı:** Sen kontrol ettin.
+   - 🔵 **Hekim onaylı:** Bir nörolog da kontrol etti.
+3. Taslak içerik hiçbir zaman başkalarına dağıtılan sürüme girmeyecek.
+4. Her içerikte **"son kontrol tarihi"** olacak. Kılavuzlar güncellendiğinde içerik de gözden geçirilecek.
+5. İlaç dozları ve protokoller kurumdan kuruma değişebileceği için, uygulamada "kurumunuzun protokolü önceliklidir" uyarısı yer alacak.
 
----
-
-## 1. Kritik Kararlar (Faz 0'da verilecek)
-
-### 1.1 Teknoloji seçimi
-| Seçenek | Artıları | Eksileri |
-|---|---|---|
-| **Flutter** (önerilen) | Tek kod tabanıyla iOS ve Android; tutarlı arayüz; güçlü grafik ve yerel bildirim paketleri; HealthKit/Health Connect eklentileri mevcut | Dart öğrenmek gerekebilir |
-| React Native (Expo) | JS/TS ekipleri için tanıdık; OTA güncelleme; web paneliyle kod paylaşımı | Native modüllerde (sağlık API'leri, arka plan) ek uğraş |
-| Native (Swift + Kotlin) | En iyi performans ve platform entegrasyonu | İki ayrı kod tabanı, yaklaşık iki kat maliyet |
-
-**✅ Karar: Flutter.** Ücretsiz, tek kod tabanı, sağlık API'leri ve bildirimler için olgun paketler var.
-
-**Backend seçenekleri**
-- **Supabase** (Postgres, Auth, Storage, Row Level Security): hızlı başlangıç, SQL, kendi sunucusunda barındırılabilir. KVKK için Türkiye veya AB'de barındırma kolay. **Önerilen.**
-- Firebase: çok hızlı başlangıç, ancak veri yurt dışında tutulur ve sorgu yetenekleri sınırlıdır.
-- Özel backend (NestJS veya FastAPI + Postgres): tam kontrol sağlar, ancak daha uzun sürer.
-
-**✅ Karar: MVP'de backend yok.** Veriler cihazda yerel SQLite veritabanında (Drift) tutulur; yedekleme ve geri yükleme dosyayla yapılır. Hekim paneli veya senkronizasyon gerektiğinde Supabase ücretsiz paketi eklenecek. Sonuç: sıfır sunucu maliyeti, kimlik doğrulamaya gerek yok, sağlık verisi cihazdan çıkmadığı için KVKK yükü çok daha az.
-
-### 1.2 Yasal çerçeve (Türkiye)
-- **KVKK:** Sağlık verisi *özel nitelikli kişisel veri* sayılır. Açık rıza, aydınlatma metni, VERBİS kaydı (eşik aşılırsa), veri işleme envanteri ve yurt dışına aktarım kuralları gerekir.
-- **Tıbbi cihaz yazılımı riski:** Uygulama teşhis koyar veya tedavi önerirse TİTCK / MDR kapsamında tıbbi cihaz sayılabilir. **MVP'de yalnızca kayıt tutma ve raporlama yapılacak; teşhis veya doz önerisi verilmeyecek.** Uygulama içinde "tıbbi tavsiye değildir" uyarısı yer alacak.
-- Uygulama mağazası kuralları: Apple ve Google'ın sağlık uygulaması politikaları ve gizlilik etiketleri.
-- Bu konularda bir hukuk danışmanından görüş alınması önerilir.
+### Teknik kararlar ve maliyet
+| Konu | Karar | Sade açıklama | Ücret |
+|---|---|---|---|
+| Yapım aracı | **Flutter** | Google'ın aracı. Önce Android, ileride aynı kodla iPhone. | Ücretsiz |
+| Veriler | **Uygulamanın içinde** | Bütün bilgiler uygulamayla birlikte gelir. İnternet yokken de (ameliyathane, bodrum kat) çalışır. Sunucu yok. | Ücretsiz |
+| İçeriğin saklanması | **GitHub'da düz metin dosyaları** | Her hastalık ve ilaç ayrı bir dosyada durur. Değişiklik geçmişi tutulur: kim, neyi, ne zaman değiştirdi görülür. | Ücretsiz |
+| Uygulamanın hazırlanması | **GitHub Actions** | Her değişiklikten sonra kurulabilir Android dosyası (APK) otomatik hazırlanır. | Ücretsiz |
+| Meslektaşlara dağıtım (ilk aşama) | APK dosyasını doğrudan paylaşmak | Dosya WhatsApp veya e-posta ile gönderilir, telefona kurulur. | Ücretsiz |
+| Google Play'de yayın (sonraki aşama) | Geliştirici hesabı | Herkese açmak istendiğinde. | Tek seferlik yaklaşık 25 $ |
 
 ---
 
-## 2. Fazlar
+## 2. Modüller (Uygulamanın Bölümleri)
 
-Aşağıdaki süreler 2–3 kişilik küçük bir ekip (mobil, backend/full-stack, yarı zamanlı tasarım) için yaklaşık değerlerdir. Tek geliştiriciyle çalışılırsa süreleri yaklaşık 1,5 ile çarpın.
+Uygulamanın ana ekranında 7 büyük bölüm olacak:
 
-### Faz 0: Keşif ve Planlama (1–2 hafta)
-- [ ] 5–10 hasta ve en az 2 nörologla görüşme; ihtiyaçların doğrulanması
-- [ ] Hedef hastalığın seçilmesi: MVP'yi tek bir hastalığa odaklamak (öneri: **epilepsi** veya **migren**) ve kalanları sonraya bırakmak
-- [ ] Rakip analizi (Seizure Tracker, Epsy, Migraine Buddy, Bearable)
-- [ ] Teknoloji kararı (bkz. 1.1) ve bunun `docs/adr/` altına mimari karar kaydı olarak yazılması
-- [ ] KVKK ön değerlendirmesi ve tıbbi cihaz kapsamı için hukuki görüş
-- [ ] MVP kapsamının dondurulması (bkz. Bölüm 3)
-- [ ] Proje yönetimi: GitHub Projects tahtası, issue şablonları, etiketler
+```
+┌─────────────────────────────────────────┐
+│  🔍  Ara: hastalık, ilaç, prosedür...   │
+├───────────────────┬─────────────────────┤
+│ 🧠 İnme Merkezi   │ 💓 CPR Zamanlayıcı  │
+├───────────────────┼─────────────────────┤
+│ 📋 NIHSS          │ 🩺 Nörolojik Muayene│
+├───────────────────┼─────────────────────┤
+│ 📚 Hastalıklar    │ 💊 İlaç Rehberi     │
+├───────────────────┴─────────────────────┤
+│ 📝 Ünite Protokollerim                  │
+└─────────────────────────────────────────┘
+```
 
-**Çıktı:** Onaylı MVP kapsamı, teknoloji kararı, kişi listesi (persona) ve kullanıcı yolculuğu haritası.
+### Modül 1: 🧠 İnme Merkezi
+En kapsamlı bölüm.
 
-### Faz 1: Tasarım (2–3 hafta, Faz 2 ile kısmen paralel)
-- [ ] Bilgi mimarisi ve ekran akışları
-- [ ] Wireframe'ler: kayıt ve giriş, onboarding, ana sayfa, hızlı kayıt, ilaçlar, takvim, rapor
-- [ ] Tasarım sistemi: renkler, tipografi, bileşenler (Figma)
-- [ ] **Erişilebilirlik öncelikli tasarım:** büyük dokunma alanları, yüksek kontrast, dinamik yazı boyutu, ekran okuyucu desteği. Titreme veya bilişsel zorluk yaşayan kullanıcılar düşünülmeli.
-- [ ] Yüksek çözünürlüklü tasarımlar ve tıklanabilir prototip
-- [ ] Prototipin 3–5 kullanıcıyla test edilmesi
+**1a. İnme tipleri**
+- İskemik inme: alt tipleri (TOAST sınıflaması: büyük damar, kardiyoembolik, küçük damar/laküner, diğer, nedeni belirlenemeyen)
+- Hemorajik inme: intraserebral kanama, subaraknoid kanama
+- TİA (geçici iskemik atak)
+- Her tip için: tanım, belirtiler, tanı, acil yaklaşım, tedavi, hemşirelik bakımı, komplikasyonlar ve kaynaklar
 
-### Faz 2: Altyapı ve Temel Kurulum (1–2 hafta)
-- [ ] Mono-repo yapısı: `/mobile`, `/backend` (veya `/supabase`), `/docs`
-- [ ] Mobil proje iskeleti: klasör yapısı, durum yönetimi (Riverpod veya Bloc), yönlendirme, tema, i18n (TR ve EN)
-- [ ] Ortamlar: dev, staging ve prod
-- [ ] CI/CD: GitHub Actions ile lint, test ve derleme; Fastlane veya Codemagic ile TestFlight ve Play Internal dağıtımı
-- [ ] Veritabanı şeması v1 ve migration'lar
-- [ ] Kimlik doğrulama: e-posta ile şifre, Apple ile giriş, Google ile giriş
-- [ ] Hata izleme (Sentry) ve gizliliğe saygılı analitik (PostHog, kendi sunucusunda veya AB'de)
-- [ ] Güvenlik temeli: TLS, Row Level Security politikaları, cihazda güvenli saklama (Keychain ve Keystore)
+**1b. Etkileşimli beyin damar haritası** (görsel)
+- Willis poligonu ve ana damarlar: ICA, ACA, MCA (M1/M2), PCA, vertebral ve baziler arterler
+- Beyin üzerinde hangi damarın hangi bölgeyi beslediği renkli olarak gösterilir
+- Bir damara veya bölgeye dokunulduğunda o damar tıkanırsa görülen belirtiler açılır. Örneğin sol MCA tıkanıklığında sağ hemiparezi ve afazi.
+- Görseller telif sorunu olmaması için Claude tarafından sıfırdan çizilir.
 
-### Faz 3: MVP Geliştirme (6–8 hafta)
+**1c. Trombektomi (mekanik trombektomi)**
+- Kimlere yapılır: endikasyonlar ve zaman pencereleri (0–6 saat, seçilmiş hastalarda 6–24 saat)
+- Hangi tıkanıklıklarda yapılır: ICA, M1, seçilmiş M2, baziler
+- Nasıl yapılır: kateterin femoral veya radial arterden girip aort ve karotis üzerinden pıhtıya ulaştığı yolun **adım adım animasyonlu görseli**
+- Stent retriever ve aspirasyon yöntemleri (basit anlatım)
+- Hemşirenin görevleri: işlem öncesi, sırası ve sonrası
 
-**Sprint 1: Hesap ve Profil**
-- [ ] Onboarding, KVKK aydınlatma metni ve açık rıza ekranı (rıza kaydı tutularak)
-- [ ] Profil: tanı, doğum yılı, hekim bilgisi (isteğe bağlı), acil durum kişisi
-- [ ] Uygulama kilidi: PIN veya biyometrik
+**1d. Trombolitik tedavi (IV tPA veya tenekteplaz)**
+- Uygunluk ve dışlama kriterleri için kontrol listesi
+- Hazırlama ve verilme adımları
+- Tedavi sırasında ve sonrasında kan basıncı hedefleri
+- Kanama veya anjiyoödem gelişirse ne yapılacağı
 
-**Sprint 2: Olay Kaydı (çekirdek özellik)**
-- [ ] **Hızlı kayıt butonu:** tek dokunuşla "şu an nöbet/atak başladı" kaydı ve kronometre
-- [ ] Ayrıntılı kayıt: tür, süre, şiddet (1–10), tetikleyiciler (uykusuzluk, stres, ışık, adet döngüsü…), belirtiler, notlar
-- [ ] Geçmiş kayıtları düzenleme ve silme
-- [ ] **Çevrimdışı öncelikli çalışma:** yerel veritabanı (Drift/SQLite veya Isar) ve bağlantı gelince senkronizasyon
+**1e. Post-op ve post-tedavi takip**
+- Trombektomi ve trombolitik sonrası **takip sıklığı çizelgesi**. Örneğin kılavuzlarda geçen: ilk 2 saat 15 dakikada bir, sonraki 6 saat 30 dakikada bir, 24. saate kadar saatte bir nörolojik muayene ve vital bulgular.
+- Kateter giriş yeri (kasık veya bilek) bakımı, kanama ve hematom kontrolü, distal nabız takibi
+- Kan basıncı hedefleri
+- Hangi durumda hekime hemen haber verilir: kırmızı bayrak listesi
+- İsteğe bağlı **takip zamanlayıcısı**: "Bir sonraki nörolojik kontrol 15 dakika sonra" şeklinde hatırlatma. Hasta bilgisi girilmez, sadece "Yatak 3" gibi bir etiket yazılabilir.
 
-**Sprint 3: İlaç Yönetimi**
-- [ ] İlaç ekleme: ad, doz, sıklık, saatler
-- [ ] Yerel bildirimle hatırlatıcılar; "aldım / atladım / ertele" eylemleri
-- [ ] İlaca uyum geçmişi
-- [ ] Yaygın nöroloji ilaçları için öneri listesi (veri kaynağı netleştirilecek)
+### Modül 2: 💓 CPR Zamanlayıcı
+Resüsitasyon sırasında tek elle ve hızlıca kullanılabilecek şekilde tasarlanır.
+- Büyük "**BAŞLAT**" butonu ve toplam CPR süresi
+- **2 dakikalık döngü sayacı:** her 2 dakikada sesli ve titreşimli "Ritim ve nabız kontrolü" uyarısı
+- **Adrenalin sayacı:** "Adrenalin verildi" butonuna basıldığında bir sonraki doz için 3–5 dakikalık geri sayım başlar; zamanı gelince uyarır
+- Şok, amiodaron, entübasyon ve ROSC için tek dokunuşlu kayıt butonları
+- Metronom: dakikada 100–120 vuruşla göğüs kompresyonu ritmi
+- Geri döndürülebilir nedenler hatırlatıcısı (4H ve 4T)
+- **İşlem sonu özeti:** saat saat neyin yapıldığının listesi; ekran görüntüsü alınabilir veya kopyalanabilir. Hasta adı yoktur ve kayıt kalıcı olarak saklanmaz.
+- CPR sürerken ekran kapanmaz
+- Kaynak: güncel AHA ve ERC resüsitasyon kılavuzları
 
-**Sprint 4: Günlük ve Görselleştirme**
-- [ ] Günlük check-in: ruh hali, uyku süresi, stres, genel durum (30 saniyeden kısa sürmeli)
-- [ ] Takvim görünümü: olaylar ve ilaç uyumu
-- [ ] Grafikler: aylık olay sayısı, ortalama şiddet, en sık tetikleyiciler, ilaç değişikliğiyle ilişkisi
+### Modül 3: 📋 NIHSS Hesaplayıcı
+- 15 maddenin her biri ayrı bir ekranda: maddenin nasıl değerlendirileceği, puan seçenekleri ve sık yapılan hatalar
+- Toplam puan otomatik hesaplanır; puanın ne anlama geldiği gösterilir (hafif, orta, ağır inme)
+- Sonuç bölümünde hangi maddeden kaç puan alındığı görünür
+- İsteğe bağlı: aynı hasta için zaman içindeki puanları karşılaştırma (yalnızca o oturum boyunca, isim girilmeden)
+- **Öğrenme modu:** her maddenin açıklaması ve örnekler
+- Ek ölçekler (sonraki sürüm): Glasgow Koma Skalası, Modifiye Rankin Ölçeği, FOUR skoru, ICH skoru, Hunt-Hess ve WFNS (subaraknoid kanama)
 
-**Sprint 5: Rapor ve Paylaşım**
-- [ ] Seçilen tarih aralığı için PDF rapor (hekime gösterilecek formatta)
-- [ ] Paylaşım: e-posta, WhatsApp, yazdırma
-- [ ] Veri dışa aktarma (CSV/JSON) ve hesap silme (KVKK kapsamındaki haklar)
+### Modül 4: 🩺 Nörolojik Muayene Rehberi
+Adım adım, görsellerle:
+- Bilinç düzeyi (GKS dahil)
+- Pupil muayenesi: boyut, eşitlik, ışık refleksi
+- Kraniyal sinirler (12 sinir; her biri nasıl test edilir)
+- Motor muayene ve kas gücü derecelendirmesi (0–5)
+- Duyu muayenesi
+- Refleksler ve Babinski
+- Serebellar testler: parmak-burun, topuk-diz
+- Meningeal irritasyon bulguları: ense sertliği, Kernig, Brudzinski
+- **Hızlı nörolojik kontrol kartı:** post-op takipte her kontrolde neye bakılacağının kısa listesi
 
-**Sprint 6: Cilalama**
-- [ ] Boş, yükleme ve hata durumları
-- [ ] Erişilebilirlik denetimi (VoiceOver ve TalkBack)
-- [ ] Performans: soğuk açılış süresi 2 saniyenin altında
-- [ ] Uygulama içi geri bildirim formu
+### Modül 5: 📚 Hastalık Kütüphanesi
+Her hastalık için aynı düzende bir kart: **Tanım · Belirtiler · Tanı · Tedavi · Hemşirelik bakımı · Komplikasyonlar · Kaynaklar**
 
-### Faz 4: Test ve Kalite (2 hafta, geliştirme boyunca da sürer)
-- [ ] Birim testleri (iş mantığı için %70'in üzerinde kapsam hedefi)
-- [ ] Widget ve entegrasyon testleri (kritik akışlar: kayıt, olay ekleme, hatırlatıcı, rapor)
-- [ ] Çevrimdışı ve senkronizasyon senaryoları, çakışma çözümü
-- [ ] Güvenlik testi: OWASP MASVS kontrol listesi, temel sızma testi
-- [ ] Bildirimlerin farklı cihazlarda ve pil tasarrufu modlarında güvenilir çalışması (özellikle Xiaomi, Huawei ve Samsung'da Android arka plan kısıtlamaları)
-- [ ] Kapalı beta: TestFlight ve Play Internal üzerinden 20–50 kullanıcı, 2–3 hafta
+İlk eklenecek hastalıklar (öncelik sırasıyla):
+1. İskemik inme ve TİA
+2. İntraserebral kanama
+3. Subaraknoid kanama ve vazospazm
+4. Epilepsi ve status epileptikus
+5. Kafa içi basınç artışı
+6. Miyastenia gravis ve miyastenik kriz
+7. Guillain-Barré sendromu
+8. Multipl skleroz (atak tedavisi dahil)
+9. Menenjit ve ensefalit
+10. Parkinson hastalığı
+11. Migren ve diğer baş ağrıları
+12. Demans ve deliryum
+13. ALS
+14. Serebral venöz sinüs trombozu
 
-### Faz 5: Yayın (1–2 hafta)
-- [ ] Mağaza materyalleri: ikon, ekran görüntüleri, açıklama (TR ve EN), tanıtım videosu
-- [ ] Gizlilik politikası ve kullanım koşullarının web'de yayınlanması
-- [ ] App Store gizlilik etiketleri ve Google Play Veri Güvenliği formu
-- [ ] Sağlık uygulaması beyanları ve tıbbi uyarı metni
-- [ ] Basit bir tanıtım sitesi (landing page)
-- [ ] Kademeli yayın (Android'de %10 → %50 → %100)
-- [ ] İzleme panosu: çökme oranı, aktif kullanıcı, tutunma (retention)
+### Modül 6: 💊 İlaç Rehberi
+Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanışı (sulandırma, seyreltme) · Veriliş yolu ve hızı · Dozu · Yan etkiler ve olası reaksiyonlar · İzlem · Hemşirelik uyarıları · Antidot (varsa) · Kaynak**
 
-### Faz 6: Yayın Sonrası ve Yol Haritası (sürekli)
-
-**v1.1: Kısa vade**
-- [ ] Bakım veren hesabı (birden fazla hasta profili ve davetle bağlanma)
-- [ ] Apple HealthKit ve Google Health Connect entegrasyonu (uyku, adım, kalp atış hızı)
-- [ ] Ana ekran widget'ı ve Apple Watch / Wear OS üzerinden hızlı kayıt
-- [ ] Ek hastalık modülleri (MS, Parkinson, migren veya epilepsi; hangisi MVP'de yoksa)
-
-**v2: Orta vade**
-- [ ] **Hekim paneli (web):** hastanın izin verdiği verileri görüntüleme, muayene öncesi özet
-- [ ] Nöbet anında acil durum kişisine konumla birlikte SMS veya bildirim gönderme
-- [ ] Hava durumu ve basınç verisinin otomatik eklenmesi (migren tetikleyicileri için)
-- [ ] Tetikleyici korelasyon analizi (istatistiksel; teşhis amaçlı değil)
-
-**v3: Uzun vade**
-- [ ] Giyilebilir cihazlarla nöbet algılama (bu özellik tıbbi cihaz düzenlemesine girer; ayrı bir regülasyon süreci gerektirir)
-- [ ] Hastane ve klinik entegrasyonları (HL7 FHIR)
-- [ ] Araştırma modülü: anonimleştirilmiş veriyle klinik çalışmalara katılım (etik kurul onayıyla)
-
----
-
-## 3. MVP Kapsamı: Özet
-
-| Dahil ✅ | Hariç ❌ (sonraki sürümler) |
+İlk eklenecek ilaçlar:
+| Grup | İlaçlar |
 |---|---|
-| Tek hastalık odağı | Çoklu hastalık modülleri |
-| Hesap, profil, uygulama kilidi | Bakım veren / çoklu profil |
-| Hızlı ve ayrıntılı olay kaydı | Giyilebilir cihazla otomatik algılama |
-| İlaç hatırlatıcı ve uyum takibi | Hekim web paneli |
-| Günlük check-in | HealthKit / Health Connect |
-| Takvim ve temel grafikler | Yapay zekâ ile tahmin |
-| PDF rapor, paylaşım, veri dışa aktarma | Acil durum SMS'i |
-| Çevrimdışı çalışma, TR ve EN dil desteği | Uygulama içi mesajlaşma |
+| Trombolitik | Alteplaz, tenekteplaz |
+| Antikoagülan ve antidotları | Heparin, düşük molekül ağırlıklı heparin, protamin, K vitamini, protrombin kompleks konsantresi (PCC), idarusizumab |
+| Antiagregan | Asetilsalisilik asit, klopidogrel |
+| Antihipertansif (acil) | Labetalol, nikardipin, urapidil |
+| SAK ve vazospazm | Nimodipin |
+| Kafa içi basınç | Mannitol, %3 NaCl |
+| Antiepileptik | Diazepam, midazolam, levetirasetam, fenitoin, valproat, lakozamid |
+| Nöroimmünoloji | IVIG, metilprednizolon (pulse), piridostigmin |
+| Resüsitasyon | Adrenalin, amiodaron, atropin |
+
+- **Doz hesaplayıcı** (örneğin kiloya göre alteplaz dozu: toplam doz, bolus ve infüzyon): tıbbi cihaz mevzuatı açısından ek dikkat ister. Bu yüzden ilk sürümde formül ve örnek hesap gösterilecek; etkileşimli hesaplayıcı, uyarı metinleri ve hekim onayıyla sonraki sürümde eklenecek.
+
+### Modül 7: 📝 Ünite Protokollerim
+- Kullanıcı kendi ünitesinin protokollerini, sık kullanılan tedavi şemalarını ve notlarını kaydedebilir
+- Örnek: "Ünitemizde status epileptikus akışı", "Nimodipin hazırlama: bizim eczanenin talimatı"
+- Bu notlar yalnızca kullanıcının kendi telefonunda saklanır
+- **Hasta adı veya kimlik bilgisi girilmemesi için** ekranda uyarı bulunur
+- Notlar dışa aktarılıp ekip arkadaşlarıyla paylaşılabilir (dosya olarak)
+
+### Her yerde olacak ortak özellikler
+- 🔍 **Arama:** tüm hastalık, ilaç ve prosedürlerde
+- ⭐ **Favoriler:** sık bakılan sayfalar ana ekranda
+- 📶 **İnternetsiz çalışma**
+- 🌙 **Karanlık mod:** gece nöbetinde göz yormaz
+- 🔤 Yazı boyutu ayarı
+- ⚠️ Açılışta tek seferlik "Bu uygulama sağlık profesyonelleri içindir; klinik kararın yerine geçmez" onayı
 
 ---
 
-## 4. Veri Modeli (taslak)
+## 3. Sürüm Planı
 
-```
-users            (id, email, created_at, locale)
-profiles         (user_id, diagnosis, birth_year, emergency_contact, ...)
-consents         (user_id, type, version, granted_at, revoked_at)
-events           (id, user_id, type, started_at, duration_sec, severity, notes)
-event_triggers   (event_id, trigger_code)
-event_symptoms   (event_id, symptom_code)
-medications      (id, user_id, name, dose, unit, schedule_json, active)
-medication_logs  (id, medication_id, scheduled_at, status[taken|skipped|snoozed], logged_at)
-daily_checkins   (id, user_id, date, mood, sleep_hours, stress, note)
-```
-Tüm tablolarda Row Level Security uygulanır: kullanıcı yalnızca kendi verisini görür. Hassas notlar için alan düzeyinde şifreleme değerlendirilecek.
+### Sürüm 0.1: "İlk Deneme" (hedef: ilk 1–2 hafta)
+İskelet uygulama. Telefonuna kurup dolaşabileceğin ilk hal.
+- [ ] Flutter projesi, ana ekran ve 7 modülün boş sayfaları
+- [ ] GitHub Actions ile otomatik APK üretimi
+- [ ] **CPR Zamanlayıcı** (tam çalışır halde; içerik gerektirmediği için ilk yapılacak araç)
+- [ ] **NIHSS Hesaplayıcı** (tam çalışır halde)
+- [ ] Açılış uyarısı, karanlık mod
+- ✅ **Senin işin:** APK'yı telefonuna kurmak, iki aracı denemek, geri bildirim vermek
+
+### Sürüm 0.2: "İnme Merkezi" (sonraki 2–3 hafta)
+- [ ] İçerik altyapısı: kaynak, kanıt düzeyi, onay durumu, son kontrol tarihi
+- [ ] İnme tipleri içeriği (taslak → senin onayın)
+- [ ] Etkileşimli beyin damar haritası
+- [ ] Trombektomi adım adım görsel anlatımı
+- [ ] Trombolitik tedavi kontrol listesi
+- [ ] Post-op ve post-tedavi takip çizelgesi ve takip zamanlayıcısı
+- ✅ **Senin işin:** İnme içeriklerini okuyup düzeltmeleri bana yazmak
+
+### Sürüm 0.3: "İlaçlar ve Muayene" (sonraki 2–3 hafta)
+- [ ] İlaç rehberi: yukarıdaki listenin tamamı
+- [ ] Nörolojik muayene rehberi ve görselleri
+- [ ] Arama ve favoriler
+- ✅ **Senin işin:** İlaç bilgilerini kendi ünitendeki uygulamayla karşılaştırmak
+
+### Sürüm 0.4: "Hastalık Kütüphanesi" (sonraki 3–4 hafta)
+- [ ] 14 hastalığın içeriği (öncelik sırasıyla, parça parça)
+- [ ] Ünite Protokollerim bölümü
+- ✅ **Senin işin:** İçerik onayı
+
+### Sürüm 1.0: "Meslektaşlarla Paylaşım"
+- [ ] Bütün içeriğin en az hemşire onaylı olması; mümkünse bir nöroloğun kontrolü
+- [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması
+- [ ] Hataların düzeltilmesi, son cilalama
+- [ ] Gizlilik politikası ve kullanım koşulları sayfası (ücretsiz, GitHub Pages)
+
+### Sonraki adımlar (1.0 sonrası)
+- [ ] Google Play'de yayın (yaklaşık 25 $)
+- [ ] Ek ölçekler: GKS, mRS, ICH, Hunt-Hess, FOUR
+- [ ] Etkileşimli doz hesaplayıcıları (hekim onayıyla)
+- [ ] **Uygulama güncellenmeden içerik güncelleme:** içerik internetten ücretsiz olarak indirilir, internet yoksa en son indirilen sürüm kullanılır
+- [ ] Bilgi testleri ve vaka senaryoları (eğitim modu, hizmet içi eğitim için)
+- [ ] iPhone sürümü (App Store yaklaşık 99 $/yıl)
+- [ ] İngilizce dil desteği
+
+> **Not:** Süreler tahminidir. Kodlamayı ben hızlı yapabilirim; asıl belirleyici olan, tıbbi içeriğin senin tarafından kontrol edilme hızıdır. Acele etmeye gerek yok, doğruluk her şeyden önemli.
 
 ---
 
-## 5. Riskler
+## 4. İçerik Hazırlama Süreci
 
-| Risk | Etki | Önlem |
-|---|---|---|
-| Uygulamanın tıbbi cihaz sayılması | Yüksek | Teşhis veya öneri yok; hukuki görüş; açık uyarı metni |
-| KVKK ihlali veya veri sızıntısı | Yüksek | Şifreleme, RLS, veriyi en aza indirme, Türkiye/AB'de barındırma, düzenli denetim |
-| Bildirimlerin Android'de çalışmaması | Orta | Pil optimizasyonu rehberi, exact alarm izni, cihaz matrisi testleri |
-| Düşük kullanıcı bağlılığı | Orta | 5 saniyede kayıt, widget, nazik hatırlatıcılar, anlamlı raporlar |
-| Kapsamın büyümesi | Orta | Tek hastalık odağı, MVP tablosuna sıkı bağlılık |
+Her hastalık veya ilaç kartı şu yolu izler:
+
+```
+1. Claude taslak hazırlar          → kaynak ve kanıt düzeyiyle, 🟡 Taslak
+2. Sen okursun                     → düzeltmeleri günlük dille yazarsın
+3. Claude düzeltir                 → sen tekrar bakarsın
+4. Sen onaylarsın                  → 🟢 Hemşire onaylı
+5. (Varsa) Nörolog kontrol eder    → 🔵 Hekim onaylı
+6. Uygulamaya girer
+```
+
+**Kullanılacak başlıca kaynaklar:**
+- AHA/ASA akut iskemik inme kılavuzu ve intraserebral kanama kılavuzu (güncel sürümler)
+- ESO (Avrupa İnme Örgütü) kılavuzları
+- AHA ve ERC resüsitasyon kılavuzları
+- NIH İnme Ölçeği resmi eğitim materyali (NINDS)
+- Türk Nöroloji Derneği tanı ve tedavi kılavuzları
+- Hakemli dergilerdeki sistematik derleme ve meta-analizler (PubMed)
+- İlaçlar için ruhsat bilgileri (KÜB / KT) ve standart ilaç başvuru kaynakları
+
+**Telif kuralı:** Makalelerden ve kitaplardan metin veya görsel kopyalanmaz. Bilgi özetlenip kendi cümlelerimizle yazılır, kaynak gösterilir. Bütün görseller sıfırdan çizilir.
 
 ---
 
-## 6. Zaman Çizelgesi (yaklaşık)
-
-```
-Hafta:      1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
-Faz 0       ██
-Faz 1          ████
-Faz 2             ███
-Faz 3                ████████████████
-Faz 4                            ██████
-Faz 5                                     ███
-```
-**Toplam:** Küçük bir ekiple yaklaşık **14–16 hafta** (3,5–4 ay), tek geliştiriciyle **5–6 ay**.
+## 5. Yasal Çerçeve (sade)
+- **Kişisel veri yok** → KVKK açısından risk çok düşük. "Ünite Protokollerim" ve zamanlayıcılarda hasta adı girilmemesi için uyarı olacak. Bu bilgiler telefondan dışarı gönderilmeyecek.
+- **Tıbbi cihaz mevzuatı:** Sadece bilgi veren bir başvuru kitabı genelde tıbbi cihaz sayılmaz. Ancak hastaya özel **doz hesaplayan** veya **tedavi kararı öneren** özellikler sayılabilir. Bu yüzden:
+  - NIHSS ve CPR zamanlayıcısı karar vermez; sadece puanlar ve zaman tutar. Düşük risklidir.
+  - Etkileşimli doz hesaplayıcıları 1.0 sonrasına bırakıldı.
+  - Google Play'de herkese açık yayından önce bir hukukçuya kısaca danışılması önerilir.
+- **Sorumluluk reddi:** "Klinik kararın yerine geçmez, kurum protokolleri önceliklidir" uyarısı.
 
 ---
 
-## 7. Açık Sorular
+## 6. Teknik Mimari (Claude için notlar)
+- **Flutter** (Dart). Durum yönetimi Riverpod, yönlendirme go_router.
+- **İçerik:** `content/` klasöründe her kart için bir Markdown dosyası. Kartın kimliği, başlığı, kategorisi, onay durumu, son kontrol tarihi ve kaynakları dosyanın başında YAML bilgisi olarak tutulur. Dosyalar derleme sırasında uygulamaya gömülür.
+- **Arama:** cihazda tam metin arama (SQLite FTS5) veya basit bellek içi indeks.
+- **Görseller:** SVG (beyin damar haritası etkileşimli: her bölge ayrı bir yol olarak tanımlanır). Animasyonlar için Rive veya Flutter animasyonları.
+- **CPR zamanlayıcı:** ekranın açık kalması (wakelock), yerel bildirim ve ses, titreşim. Uygulama arka plana geçse de sayacın doğru kalması için gerçek zaman damgası kullanılır.
+- **Ünite protokolleri:** cihazda SQLite (Drift); JSON dışa ve içe aktarma.
+- **CI:** GitHub Actions ile `flutter analyze`, `flutter test` ve `flutter build apk`. APK, Actions çıktısı olarak ve etiketli sürümlerde GitHub Releases'ta yayınlanır.
+- **Testler:** NIHSS puan hesaplama, CPR zamanlayıcı mantığı ve içerik dosyalarının doğrulanması (her kartta kaynak ve onay alanı zorunlu) için birim testleri.
 
-**Teknik (cevaplandı)**
-- [x] Teknoloji: Flutter
-- [x] Ekip: geliştirme Claude'da, ürün sahibi ve test eden kullanıcı sensin
-- [x] Bütçe: olabildiğince ücretsiz; önce Android, sunucusuz başlıyoruz
+---
 
-**Ürün (senin anlatman gerekenler)**
-- [ ] Uygulamayı kim kullanacak ve hangi hastalık için?
-- [ ] Kullanıcı neleri kaydetmek isteyecek?
-- [ ] Telefon tipi: Android mi, iPhone mu?
-- [ ] Gelir modeli ileride düşünülecek
+## 7. Açık Sorular (senin için)
+- [ ] "Hastalara uygulanan tedaviler kaydedilebilsin" derken **Ünite Protokollerim** bölümündeki gibi isimsiz tedavi şemalarını mı kastediyorsun, yoksa başka bir şeyi mi?
+- [ ] Bu modüllerin dışında aklına gelen bir bölüm var mı? Örneğin vardiya devir kontrol listesi, yutma (disfaji) taraması, düşme riski ölçeği.
+- [ ] İçeriği kontrol edebilecek bir nörolog tanıyor musun?
+- [ ] Uygulamanın adı "NöroTakip" olarak kalsın mı?
