@@ -17,7 +17,7 @@ Telefonda taşınan, internet olmadan da çalışan bir **nöroloji başvuru kit
 |---|---|
 | **Sen** (nöroloji hemşiresi, ürün sahibi) | Hangi bilgi ve aracın gerektiğini söylersin. Hazırlanan tıbbi içeriği kontrol edip onaylarsın. Uygulamayı deneyip geri bildirim verirsin. |
 | **Claude** (geliştirici) | Bütün teknik işleri yapar, kodu yazar. Tıbbi içeriğin ilk taslağını kılavuz ve makalelerden kaynak göstererek hazırlar. Yaptığı her şeyi sade dille anlatır. |
-| **Bir nörolog** (önerilir) | Senin onayından sonra içeriğe ikinci bir göz olarak bakar. |
+| **Bir hekim** (isteğe bağlı, ileride) | Fırsat olursa (örneğin ünitedeki bir hekim) içeriğe ikinci bir göz olarak bakar. Zorunlu değil. |
 
 ### Çok önemli bir güvenlik kuralı
 Tıbbi bilgi yanlış olursa hastaya zarar verebilir. Bu yüzden şu kurallara uyacağız:
@@ -25,7 +25,7 @@ Tıbbi bilgi yanlış olursa hastaya zarar verebilir. Bu yüzden şu kurallara u
 2. Uygulamadaki her içerik kartında şu üç durumdan biri görünecek:
    - 🟡 **Taslak:** Claude hazırladı, henüz kontrol edilmedi.
    - 🟢 **Hemşire onaylı:** Sen kontrol ettin.
-   - 🔵 **Hekim onaylı:** Bir nörolog da kontrol etti.
+   - 🔵 **Hekim onaylı:** (isteğe bağlı) Bir hekim de kontrol etti.
 3. Taslak içerik hiçbir zaman başkalarına dağıtılan sürüme girmeyecek.
 4. Her içerikte **"son kontrol tarihi"** olacak. Kılavuzlar güncellendiğinde içerik de gözden geçirilecek.
 5. İlaç dozları ve protokoller kurumdan kuruma değişebileceği için, uygulamada "kurumunuzun protokolü önceliklidir" uyarısı yer alacak.
@@ -44,7 +44,7 @@ Tıbbi bilgi yanlış olursa hastaya zarar verebilir. Bu yüzden şu kurallara u
 
 ## 2. Modüller (Uygulamanın Bölümleri)
 
-Uygulamanın ana ekranında 7 büyük bölüm olacak:
+Uygulamanın ana ekranında 8 büyük bölüm olacak:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -52,12 +52,12 @@ Uygulamanın ana ekranında 7 büyük bölüm olacak:
 ├───────────────────┬─────────────────────┤
 │ 🧠 İnme Merkezi   │ 💓 CPR Zamanlayıcı  │
 ├───────────────────┼─────────────────────┤
-│ 📋 NIHSS          │ 🩺 Nörolojik Muayene│
+│ 📋 Ölçekler       │ 🩺 Nörolojik Muayene│
 ├───────────────────┼─────────────────────┤
 │ 📚 Hastalıklar    │ 💊 İlaç Rehberi     │
-├───────────────────┴─────────────────────┤
-│ 📝 Ünite Protokollerim                  │
-└─────────────────────────────────────────┘
+├───────────────────┼─────────────────────┤
+│ 👩‍⚕️ Hemşirelik     │ 📝 Ünite Protokolleri│
+└───────────────────┴─────────────────────┘
 ```
 
 ### Modül 1: 🧠 İnme Merkezi
@@ -107,7 +107,10 @@ Resüsitasyon sırasında tek elle ve hızlıca kullanılabilecek şekilde tasar
 - CPR sürerken ekran kapanmaz
 - Kaynak: güncel AHA ve ERC resüsitasyon kılavuzları
 
-### Modül 3: 📋 NIHSS Hesaplayıcı
+### Modül 3: 📋 Ölçekler (NIHSS ve diğerleri)
+İlk ölçek NIHSS. Hemşirelik ölçekleri (düşme, bası yarası, yutma) Modül 8'de anlatılıyor ama bu ekranda da listelenecek.
+
+**NIHSS Hesaplayıcı**
 - 15 maddenin her biri ayrı bir ekranda: maddenin nasıl değerlendirileceği, puan seçenekleri ve sık yapılan hatalar
 - Toplam puan otomatik hesaplanır; puanın ne anlama geldiği gösterilir (hafif, orta, ağır inme)
 - Sonuç bölümünde hangi maddeden kaç puan alındığı görünür
@@ -171,6 +174,33 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - **Hasta adı veya kimlik bilgisi girilmemesi için** ekranda uyarı bulunur
 - Notlar dışa aktarılıp ekip arkadaşlarıyla paylaşılabilir (dosya olarak)
 
+### Modül 8: 👩‍⚕️ Hemşirelik ve Hasta Güvenliği
+
+**8a. Hemşirelik tanıları**
+- Nöroloji hastalarında sık kullanılan tanılar. Örnekler: serebral doku perfüzyonunda etkisizlik riski, düşme riski, bozulmuş fiziksel mobilite, yutmada bozulma, aspirasyon riski, sözel iletişimde bozulma, deri bütünlüğünde bozulma riski, öz bakım eksikliği.
+- Her tanı için: ilişkili faktörler, tanımlayıcı özellikler, hedefler, hemşirelik girişimleri ve değerlendirme.
+- Hastalık kartlarından ilgili hemşirelik tanılarına bağlantı. Örneğin inme kartından "yutmada bozulma" tanısına geçilebilir.
+- ⚠️ NANDA-I sınıflaması telif kapsamındadır. Tanı adları kullanılır; tanımlar kopyalanmaz, kendi cümlelerimizle yazılır.
+
+**8b. Hemşirelik ölçekleri** (puanlanabilir; "Ölçekler" bölümünde NIHSS ile birlikte)
+- **Düşme riski:** İtaki Düşme Riski Ölçeği (Sağlık Bakanlığı'nın kullandığı) ve Morse Düşme Ölçeği
+- **Bası yarası riski:** Braden Ölçeği ve bası yarası evrelendirmesi (Evre 1–4, evrelendirilemeyen, derin doku hasarı), her evre için görsel ve bakım önerileri
+- **Yutma taraması:** inme hastalarında oral alım öncesi yatak başı yutma testi (GUSS gibi)
+- Ölçek sonucuna göre önerilen önlemler (örneğin yüksek düşme riski görülünce yapılacaklar listesi)
+- ⚠️ Bazı ölçeklerin (örneğin Braden) yazılımda kullanımı lisans gerektirebilir. Her ölçeğin kullanım izni eklenmeden önce kontrol edilecek; gerekirse lisans istenecek ya da serbest kullanılabilen bir alternatif seçilecek.
+
+**8c. Acil durum kodları**
+- Sağlıkta Kalite Standartları'ndaki (SKS) kodlar: **Mavi Kod** (kardiyopulmoner arrest), **Pembe Kod** (bebek veya çocuk kaçırılması), **Beyaz Kod** (sağlık çalışanına şiddet), ayrıca kurumda kullanılan diğer kodlar (yangın, afet vb.)
+- Her kod için: ne zaman verilir, nasıl verilir (dahili numara), kim ne yapar, hedef müdahale süresi
+- Kod adları ve dahili numaralar kurumdan kuruma değiştiği için **kullanıcı kendi hastanesine göre düzenleyebilecek**
+- CPR Zamanlayıcı ekranından Mavi Kod bilgisine hızlı geçiş
+
+**8d. Hasta güvenliği ve akreditasyon (JCI ve SKS)**
+- **JCI Uluslararası Hasta Güvenliği Hedefleri** (6 hedef): hasta kimliğinin doğru tanımlanması, etkili iletişim (sözel order, kritik değer bildirimi, devir teslim için SBAR), yüksek riskli ilaçların güvenliği, doğru taraf, doğru prosedür ve doğru hasta, enfeksiyon riskinin azaltılması (el hijyeni, 5 endikasyon), düşme kaynaklı zararın azaltılması
+- Hemşirelerin denetimlerde sık sorulan konuları: yüksek riskli ilaçlar ve benzer isimli ilaçlar listesi, ağrı değerlendirmesi, kısıtlama uygulaması, hasta eğitimi kayıtları, olay bildirimi
+- Türkiye'deki hastaneler için **SKS** karşılıkları (JCI'ya benzer ulusal standartlar)
+- ⚠️ JCI ve SKS standart metinleri kopyalanmaz; özetlenip kaynak ve sürüm bilgisi verilir. Standartlar her birkaç yılda güncellendiği için "son kontrol tarihi" burada özellikle önemlidir.
+
 ### Her yerde olacak ortak özellikler
 - 🔍 **Arama:** tüm hastalık, ilaç ve prosedürlerde
 - ⭐ **Favoriler:** sık bakılan sayfalar ana ekranda
@@ -212,8 +242,15 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [ ] Ünite Protokollerim bölümü
 - ✅ **Senin işin:** İçerik onayı
 
+### Sürüm 0.5: "Hemşirelik ve Hasta Güvenliği" (sonraki 2–3 hafta)
+- [ ] Hemşirelik tanıları ve hastalık kartlarıyla bağlantıları
+- [ ] İtaki, Morse ve Braden ölçekleri (lisans kontrolünden sonra), bası yarası evreleri, yutma taraması
+- [ ] Acil durum kodları (hastaneye göre düzenlenebilir)
+- [ ] JCI hasta güvenliği hedefleri ve SKS karşılıkları
+- ✅ **Senin işin:** Kendi hastanendeki kod numaralarını ve uygulamaları karşılaştırmak
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
-- [ ] Bütün içeriğin en az hemşire onaylı olması; mümkünse bir nöroloğun kontrolü
+- [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması
 - [ ] Hataların düzeltilmesi, son cilalama
 - [ ] Gizlilik politikası ve kullanım koşulları sayfası (ücretsiz, GitHub Pages)
@@ -240,7 +277,7 @@ Her hastalık veya ilaç kartı şu yolu izler:
 2. Sen okursun                     → düzeltmeleri günlük dille yazarsın
 3. Claude düzeltir                 → sen tekrar bakarsın
 4. Sen onaylarsın                  → 🟢 Hemşire onaylı
-5. (Varsa) Nörolog kontrol eder    → 🔵 Hekim onaylı
+5. (İleride, fırsat olursa) Hekim  → 🔵 Hekim onaylı
 6. Uygulamaya girer
 ```
 
@@ -280,7 +317,7 @@ Her hastalık veya ilaç kartı şu yolu izler:
 ---
 
 ## 7. Açık Sorular (senin için)
-- [ ] "Hastalara uygulanan tedaviler kaydedilebilsin" derken **Ünite Protokollerim** bölümündeki gibi isimsiz tedavi şemalarını mı kastediyorsun, yoksa başka bir şeyi mi?
-- [ ] Bu modüllerin dışında aklına gelen bir bölüm var mı? Örneğin vardiya devir kontrol listesi, yutma (disfaji) taraması, düşme riski ölçeği.
-- [ ] İçeriği kontrol edebilecek bir nörolog tanıyor musun?
-- [ ] Uygulamanın adı "NöroTakip" olarak kalsın mı?
+- [x] Tedavi kaydı → ünitede kullanılan isimsiz tedavi şemaları (Modül 7)
+- [x] Ek bölümler → hemşirelik tanıları, düşme ve bası yarası ölçekleri, acil durum kodları, JCI (Modül 8)
+- [x] İçerik kontrolü → kendi bilgimle teyit edeceğim; hekim kontrolü isteğe bağlı
+- [ ] Uygulamanın adı (öneriler: NöroCep, NöroRehber, NöroKılavuz, NöroAsist)
