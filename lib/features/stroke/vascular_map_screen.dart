@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -181,6 +183,8 @@ class _MapScaffold extends StatelessWidget {
     required this.painter,
     required this.onTapLogical,
     required this.legend,
+    this.legendColors = true,
+    this.extra,
   });
 
   final String hint;
@@ -188,6 +192,12 @@ class _MapScaffold extends StatelessWidget {
   final CustomPainter painter;
   final ValueChanged<Offset> onTapLogical;
   final List<Vessel> legend;
+
+  /// Açıklama düğmelerinde renk noktası gösterilsin mi.
+  final bool legendColors;
+
+  /// Haritanın üstünde gösterilen ek denetim (ör. bölgeleri aç/kapat).
+  final Widget? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -197,38 +207,49 @@ class _MapScaffold extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
       children: [
         Text(hint, textAlign: TextAlign.center),
+        ?extra,
         const SizedBox(height: 8),
         Center(child: Text('ÖN (alın)', style: small)),
         Row(
           children: [
-            Flexible(child: Text('◀ Hastanın SAĞI', style: small)),
+            const Icon(Icons.arrow_back, size: 14),
+            Flexible(child: Text(' Hastanın SAĞI', style: small)),
             const Spacer(),
             Flexible(
               child: Text(
-                'Hastanın SOLU ▶',
+                'Hastanın SOLU ',
                 style: small,
                 textAlign: TextAlign.end,
               ),
             ),
+            const Icon(Icons.arrow_forward, size: 14),
           ],
         ),
         const SizedBox(height: 4),
-        AspectRatio(
-          aspectRatio: size.width / size.height,
-          child: LayoutBuilder(
-            builder: (context, c) {
-              final scale = c.maxWidth / size.width;
-              return GestureDetector(
-                onTapUp: (d) => onTapLogical(d.localPosition / scale),
-                child: CustomPaint(size: c.biggest, painter: painter),
-              );
-            },
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: ColoredBox(
+            color: const Color(0xFF0B0B0B),
+            child: AspectRatio(
+              aspectRatio: size.width / size.height,
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final scale = c.maxWidth / size.width;
+                  return GestureDetector(
+                    onTapUp: (d) => onTapLogical(d.localPosition / scale),
+                    child: CustomPaint(size: c.biggest, painter: painter),
+                  );
+                },
+              ),
+            ),
           ),
         ),
+        const SizedBox(height: 4),
         Center(child: Text('ARKA (ense)', style: small)),
         const SizedBox(height: 4),
         Text(
-          'BT görüntüsündeki gibi: ekranın solu hastanın sağıdır.',
+          'BT görüntüsündeki gibi: ekranın solu hastanın sağıdır. Çizimler '
+          'şematiktir.',
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall,
         ),
@@ -240,7 +261,9 @@ class _MapScaffold extends StatelessWidget {
           children: [
             for (final v in legend)
               ActionChip(
-                avatar: CircleAvatar(backgroundColor: vesselColors[v]),
+                avatar: legendColors
+                    ? CircleAvatar(backgroundColor: vesselColors[v])
+                    : null,
                 label: Text(v.info.abbr),
                 onPressed: () => _showInfo(context, v, null),
               ),
@@ -261,20 +284,22 @@ class _AxialTab extends StatefulWidget {
 class _AxialTabState extends State<_AxialTab> {
   final _map = AxialMap.build();
   _Selection? _selected;
+  bool _showRegions = true;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return _MapScaffold(
       hint:
           'Bir bölgeye dokunun: o damar tıkanırsa görülecek belirtiler '
           'açılır.',
       size: axialSize,
-      painter: _AxialPainter(
-        _map,
-        _selected,
-        outlineColor: theme.colorScheme.onSurface,
-        labelColor: theme.colorScheme.onSurface,
+      painter: _AxialPainter(_map, _selected, showRegions: _showRegions),
+      extra: SwitchListTile(
+        dense: true,
+        value: _showRegions,
+        onChanged: (v) => setState(() => _showRegions = v),
+        title: const Text('Damar bölgelerini göster'),
+        subtitle: const Text('Kapatınca anatomik yapıların adları görünür'),
       ),
       legend: const [
         Vessel.aca,
@@ -293,61 +318,117 @@ class _AxialTabState extends State<_AxialTab> {
   }
 }
 
+/// Kesikli çizgi.
+Path _dashed(Path source, {double dash = 5, double gap = 4}) {
+  final out = Path();
+  for (final metric in source.computeMetrics()) {
+    for (var d = 0.0; d < metric.length; d += dash + gap) {
+      out.addPath(metric.extractPath(d, d + dash), Offset.zero);
+    }
+  }
+  return out;
+}
+
 class _AxialPainter extends CustomPainter {
-  _AxialPainter(
-    this.map,
-    this.selected, {
-    required this.outlineColor,
-    required this.labelColor,
-  });
+  _AxialPainter(this.map, this.selected, {required this.showRegions});
 
   final AxialMap map;
   final _Selection? selected;
-  final Color outlineColor;
-  final Color labelColor;
+  final bool showRegions;
+
+  static const _grey = Color(0xFFA2A2A2);
+  static const _white = Color(0xFF858585);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / axialSize.width);
+    final a = map.anatomy;
+
+    // Kafatası, gri ve beyaz cevher (BT tonlarında).
+    canvas.drawPath(a.skull, Paint()..color = const Color(0xFFE6E6E6));
+    canvas.drawPath(a.brain, Paint()..color = _grey);
+    canvas.drawPath(
+      a.whiteMatter,
+      Paint()
+        ..color = _white
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    canvas.drawPath(
+      a.sulci,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFF353535),
+    );
+    canvas.drawPath(
+      a.fissures,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFF242424),
+    );
+    canvas.drawPath(a.deepGrey, Paint()..color = _grey);
+    canvas.drawPath(
+      a.deepGrey,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.6
+        ..color = const Color(0xFF6A6A6A),
+    );
+
     for (final r in map.regions.reversed) {
       final isSel = selected?.vessel == r.vessel && selected?.side == r.side;
       final color = vesselColors[r.vessel]!;
-      canvas.drawPath(
-        r.path,
-        Paint()..color = color.withValues(alpha: isSel ? 0.95 : 0.55),
-      );
-      canvas.drawPath(
-        r.path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = isSel ? 3 : 1
-          ..color = isSel ? outlineColor : color,
-      );
+      if (showRegions || isSel) {
+        canvas.drawPath(
+          r.path,
+          Paint()
+            ..color = color.withValues(
+              alpha: isSel ? 0.62 : (showRegions ? 0.36 : 0),
+            ),
+        );
+      }
+      if (showRegions) {
+        canvas.drawPath(
+          _dashed(r.path),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.2
+            ..color = color,
+        );
+      }
+      if (isSel) {
+        canvas.drawPath(
+          r.path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.5
+            ..color = Colors.white,
+        );
+      }
     }
-    canvas.drawPath(
-      map.ventricles,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = outlineColor.withValues(alpha: 0.5),
-    );
-    canvas.drawPath(
-      map.outline,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = outlineColor,
-    );
-    for (final r in map.regions) {
-      if (r.labelAt != null) {
-        _drawLabel(canvas, r.vessel.info.abbr, r.labelAt!, 14, labelColor);
+
+    // Ventriküller (BOS) bölgelerin üstünde: renklenmez.
+    canvas.drawPath(a.ventricles, Paint()..color = const Color(0xFF1E1E1E));
+
+    if (showRegions) {
+      for (final r in map.regions) {
+        if (r.labelAt != null) {
+          _drawLabel(canvas, r.vessel.info.abbr, r.labelAt!, 14);
+        }
+      }
+    } else {
+      for (final (text, at) in a.labels) {
+        _drawLabel(canvas, text, at, 8.5);
       }
     }
   }
 
   @override
   bool shouldRepaint(_AxialPainter old) =>
-      old.selected != selected || old.outlineColor != outlineColor;
+      old.selected != selected || old.showRegions != showRegions;
 }
 
 class _WillisTab extends StatefulWidget {
@@ -363,16 +444,11 @@ class _WillisTabState extends State<_WillisTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return _MapScaffold(
-      hint: 'Bir damara dokunun. Alttan görünüm, ön taraf yukarıda.',
+      hint: 'Bir damara dokunun. Beynin alttan görünümü, ön taraf yukarıda.',
       size: willisSize,
-      painter: _WillisPainter(
-        _map,
-        _selected,
-        labelColor: theme.colorScheme.onSurface,
-        highlight: theme.colorScheme.onSurface,
-      ),
+      painter: _WillisPainter(_map, _selected),
+      legendColors: false,
       legend: const [
         Vessel.ica,
         Vessel.m1,
@@ -398,68 +474,133 @@ class _WillisTabState extends State<_WillisTab> {
 }
 
 class _WillisPainter extends CustomPainter {
-  _WillisPainter(
-    this.map,
-    this.selected, {
-    required this.labelColor,
-    required this.highlight,
-  });
+  _WillisPainter(this.map, this.selected);
 
   final WillisMap map;
   final _Selection? selected;
-  final Color labelColor;
-  final Color highlight;
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.scale(size.width / willisSize.width);
+
+    // Beyin tabanı: kenarları koyulaşan gri dokular.
+    for (final (path, tone) in map.anatomy) {
+      final b = path.getBounds();
+      final base = (tone * 255).round();
+      canvas.drawPath(
+        path,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              Color.fromARGB(255, base + 20, base + 12, base + 10),
+              Color.fromARGB(255, base - 60, base - 64, base - 66),
+            ],
+          ).createShader(b),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = const Color(0xFF3A3A3A),
+      );
+    }
+
+    // Sinirler.
+    canvas.drawPath(
+      map.nerves,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.5
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFF8D7F57),
+    );
+    canvas.drawPath(
+      map.nerves,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFFEADCAE),
+    );
+
+    // Arterler: koyu kenar, kırmızı gövde ve parlak orta çizgi.
     bool isSel(Vessel v, Side? s) =>
         selected?.vessel == v && selected?.side == s;
-    for (final s in map.segments) {
-      final sel = isSel(s.vessel, s.side);
-      final width = switch (s.vessel) {
-        Vessel.basilar || Vessel.ica || Vessel.vertebral || Vessel.m1 => 9.0,
-        Vessel.m2 || Vessel.a1a2 || Vessel.p1p2 => 7.0,
-        _ => 5.0,
-      };
-      if (sel) {
-        canvas.drawLine(
-          s.a,
-          s.b,
+    for (final v in map.vessels) {
+      if (isSel(v.vessel, v.side)) {
+        canvas.drawPath(
+          v.path,
           Paint()
-            ..color = highlight
-            ..strokeWidth = width + 5
-            ..strokeCap = StrokeCap.round,
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = v.width + 8
+            ..strokeCap = StrokeCap.round
+            ..color = const Color(0xCCFFEB3B)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
         );
       }
-      canvas.drawLine(
-        s.a,
-        s.b,
-        Paint()
-          ..color = vesselColors[s.vessel]!
-          ..strokeWidth = width
-          ..strokeCap = StrokeCap.round,
+    }
+    for (final v in map.vessels) {
+      final stroke = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(
+        v.path,
+        stroke
+          ..strokeWidth = v.width + 1.6
+          ..color = const Color(0xFF5E0B0B),
+      );
+      canvas.drawPath(
+        v.path,
+        stroke
+          ..strokeWidth = v.width
+          ..color = const Color(0xFFC62828),
+      );
+      canvas.drawPath(
+        v.path,
+        stroke
+          ..strokeWidth = math.max(v.width * 0.3, 1)
+          ..color = const Color(0xFFF4A3A3),
       );
     }
     for (final c in WillisMap.icaPoints) {
-      canvas.drawCircle(c, 9, Paint()..color = vesselColors[Vessel.ica]!);
+      canvas.drawCircle(
+        c,
+        8,
+        Paint()
+          ..shader = const RadialGradient(
+            colors: [Color(0xFFF4A3A3), Color(0xFFC62828), Color(0xFF5E0B0B)],
+            stops: [0, 0.6, 1],
+          ).createShader(Rect.fromCircle(center: c, radius: 8)),
+      );
     }
     for (final l in map.labels) {
-      _drawLabel(canvas, l.text, l.at, 10, labelColor);
+      _drawLabel(canvas, l.text, l.at, 9.5);
     }
   }
 
   @override
-  bool shouldRepaint(_WillisPainter old) =>
-      old.selected != selected || old.labelColor != labelColor;
+  bool shouldRepaint(_WillisPainter old) => old.selected != selected;
 }
 
-void _drawLabel(Canvas canvas, String text, Offset at, double size, Color c) {
+/// Koyu zemin üzerinde okunaklı, gölgeli beyaz etiket.
+void _drawLabel(Canvas canvas, String text, Offset at, double size) {
   final tp = TextPainter(
     text: TextSpan(
       text: text,
-      style: TextStyle(color: c, fontSize: size, fontWeight: FontWeight.bold),
+      style: TextStyle(
+        color: Colors.white,
+        fontFamily: 'Roboto',
+        fontSize: size,
+        fontWeight: FontWeight.bold,
+        height: 1.1,
+        shadows: const [
+          Shadow(blurRadius: 3, color: Colors.black),
+          Shadow(blurRadius: 1, color: Colors.black),
+        ],
+      ),
     ),
+    textAlign: TextAlign.center,
     textDirection: TextDirection.ltr,
   )..layout();
   tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));

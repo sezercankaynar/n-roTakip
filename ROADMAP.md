@@ -276,7 +276,8 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 ### Sonraki adımlar (1.0 sonrası)
 - [ ] Google Play'de yayın (yaklaşık 25 $)
 - [ ] Ek ölçekler: GKS, mRS, ICH, Hunt-Hess, FOUR
-- [ ] Etkileşimli doz hesaplayıcıları (hekim onayıyla)
+- [x] tPA/tenekteplaz doz hesaplayıcı (ürün sahibinin isteğiyle 0.2.2'de eklendi; iki kişi kontrolü uyarısıyla)
+- [ ] Diğer etkileşimli doz hesaplayıcıları
 - [ ] **Uygulama güncellenmeden içerik güncelleme:** içerik internetten ücretsiz olarak indirilir, internet yoksa en son indirilen sürüm kullanılır
 - [ ] Bilgi testleri ve vaka senaryoları (eğitim modu, hizmet içi eğitim için)
 - [ ] iPhone sürümü (App Store yaklaşık 99 $/yıl)

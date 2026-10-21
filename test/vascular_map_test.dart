@@ -48,9 +48,9 @@ void main() {
     const cases = <(Offset, Vessel?, Side?)>[
       (Offset(212, 150), Vessel.m1, Side.left),
       (Offset(88, 150), Vessel.m1, Side.right),
-      (Offset(150, 112), Vessel.acomm, null),
+      (Offset(150, 120), Vessel.acomm, null),
       (Offset(150, 260), Vessel.basilar, null),
-      (Offset(186, 344), Vessel.pica, Side.left),
+      (Offset(206, 330), Vessel.pica, Side.left),
       (Offset(285, 20), null, null),
     ];
     for (final (p, vessel, side) in cases) {

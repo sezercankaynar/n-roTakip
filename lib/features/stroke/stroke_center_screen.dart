@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../content/content_screen.dart';
 import 'thrombolysis_checklist.dart';
+import 'thrombolytic_dose_screen.dart';
 import 'vascular_map_screen.dart';
 
 class _Entry {
@@ -59,6 +60,7 @@ const _sections = <(String, List<_Entry>)>[
         Icons.vaccines,
         asset: 'trombolitik-tedavi.md',
       ),
+      _Entry('tPA Doz Hesaplayıcı', Icons.calculate, screen: _doseCalculator),
       _Entry(
         'Trombolitik Kontrol Listesi',
         Icons.checklist,
@@ -89,6 +91,8 @@ const _sections = <(String, List<_Entry>)>[
 Widget _checklist(BuildContext _) => const ThrombolysisChecklistScreen();
 
 Widget _vascularMap(BuildContext _) => const VascularMapScreen();
+
+Widget _doseCalculator(BuildContext _) => const ThrombolyticDoseScreen();
 
 class StrokeCenterScreen extends StatelessWidget {
   const StrokeCenterScreen({super.key});
