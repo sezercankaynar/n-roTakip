@@ -8,30 +8,52 @@ class AppSettings extends ChangeNotifier {
   static const _themeKey = 'theme_mode';
   static const _disclaimerKey = 'disclaimer_accepted_v1';
 
-  final SharedPreferences _prefs;
+  /// `null` ise ayarlar yalnızca bellekte tutulur (cihaz deposu açılamadı).
+  final SharedPreferences? _prefs;
+  ThemeMode _themeMode = ThemeMode.system;
+  bool _disclaimerAccepted = false;
 
   static Future<AppSettings> load() async {
-    return AppSettings._(await SharedPreferences.getInstance());
+    final settings = AppSettings._(await SharedPreferences.getInstance());
+    settings._readFromPrefs();
+    return settings;
   }
 
-  ThemeMode get themeMode {
-    final name = _prefs.getString(_themeKey);
-    return ThemeMode.values.firstWhere(
+  /// Cihaz deposu kullanılamadığında yedek: ayarlar uygulama kapanınca unutulur.
+  factory AppSettings.inMemory() => AppSettings._(null);
+
+  void _readFromPrefs() {
+    final prefs = _prefs!;
+    final name = prefs.getString(_themeKey);
+    _themeMode = ThemeMode.values.firstWhere(
       (m) => m.name == name,
       orElse: () => ThemeMode.system,
     );
+    _disclaimerAccepted = prefs.getBool(_disclaimerKey) ?? false;
   }
+
+  ThemeMode get themeMode => _themeMode;
 
   Future<void> setThemeMode(ThemeMode mode) async {
-    await _prefs.setString(_themeKey, mode.name);
+    _themeMode = mode;
     notifyListeners();
+    await _save(() => _prefs?.setString(_themeKey, mode.name));
   }
 
-  bool get disclaimerAccepted => _prefs.getBool(_disclaimerKey) ?? false;
+  bool get disclaimerAccepted => _disclaimerAccepted;
 
   Future<void> acceptDisclaimer() async {
-    await _prefs.setBool(_disclaimerKey, true);
+    _disclaimerAccepted = true;
     notifyListeners();
+    await _save(() => _prefs?.setBool(_disclaimerKey, true));
+  }
+
+  Future<void> _save(Future<bool>? Function() write) async {
+    try {
+      await write();
+    } catch (e) {
+      debugPrint('Ayar kaydedilemedi: $e');
+    }
   }
 }
 
