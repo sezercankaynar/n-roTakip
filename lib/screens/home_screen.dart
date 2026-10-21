@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
+import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
 import 'coming_soon_screen.dart';
 import 'scales_screen.dart';
@@ -20,7 +21,7 @@ final _modules = <_Module>[
     'İnme Merkezi',
     Icons.psychology,
     const Color(0xFF5E35B1),
-    (_) => const ComingSoonScreen(title: 'İnme Merkezi', version: '0.2'),
+    (_) => const StrokeCenterScreen(),
   ),
   _Module(
     'CPR Zamanlayıcı',

@@ -239,12 +239,14 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - ✅ **Senin işin:** APK'yı telefonuna kurmak, iki aracı denemek, geri bildirim vermek
 
 ### Sürüm 0.2: "İnme Merkezi" (sonraki 2–3 hafta)
-- [ ] İçerik altyapısı: kaynak, kanıt düzeyi, onay durumu, son kontrol tarihi
-- [ ] İnme tipleri içeriği (taslak → senin onayın)
+- [x] İçerik altyapısı: kaynak, onay durumu, son kontrol tarihi
+- [x] İnme tipleri içeriği (taslak; senin onayın bekleniyor)
 - [ ] Etkileşimli beyin damar haritası
 - [ ] Trombektomi adım adım görsel anlatımı
-- [ ] Trombolitik tedavi kontrol listesi
-- [ ] Post-op ve post-tedavi takip çizelgesi ve takip zamanlayıcısı
+- [x] Trombolitik tedavi kontrol listesi
+- [x] Post-op ve post-tedavi takip çizelgesi
+- [ ] Takip zamanlayıcısı (bildirimli)
+- [x] Trombolitik tedavi ve mekanik trombektomi metinleri
 - ✅ **Senin işin:** İnme içeriklerini okuyup düzeltmeleri bana yazmak
 
 ### Sürüm 0.3: "İlaçlar ve Muayene" (sonraki 2–3 hafta)
