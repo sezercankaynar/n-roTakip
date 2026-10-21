@@ -45,10 +45,11 @@ android {
         }
         release {
             signingConfig = signingConfigs.getByName("test")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
+            // Kod küçültücü (R8) kapalı: shared_preferences_android gibi eklentiler
+            // Kotlin sınıflarına JNI ile isimden erişiyor ve R8 bunları silince
+            // uygulama ayarları okuyamıyor. APK biraz büyür ama güvenilir çalışır.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
