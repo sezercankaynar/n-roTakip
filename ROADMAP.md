@@ -1,4 +1,4 @@
-# NöroTakip: İş Haritası
+# NöroCep: İş Haritası
 
 **Nöroloji servisi, nöroloji yoğun bakım ve inme ünitesinde çalışan hemşire ve hekimler için cep rehberi.**
 Hastalıklar, tedaviler, ilaçlar ve prosedürler hakkında bilimsel kaynaklara dayalı bilgi sunar. Ayrıca NIHSS hesaplayıcı ve CPR zamanlayıcısı gibi klinikte kullanılan araçları içerir.
@@ -215,11 +215,11 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 
 ### Sürüm 0.1: "İlk Deneme" (hedef: ilk 1–2 hafta)
 İskelet uygulama. Telefonuna kurup dolaşabileceğin ilk hal.
-- [ ] Flutter projesi, ana ekran ve 7 modülün boş sayfaları
+- [x] Flutter projesi, ana ekran ve 8 modülün boş sayfaları
 - [ ] GitHub Actions ile otomatik APK üretimi
-- [ ] **CPR Zamanlayıcı** (tam çalışır halde; içerik gerektirmediği için ilk yapılacak araç)
-- [ ] **NIHSS Hesaplayıcı** (tam çalışır halde)
-- [ ] Açılış uyarısı, karanlık mod
+- [x] **CPR Zamanlayıcı** (tam çalışır halde; içerik gerektirmediği için ilk yapılacak araç)
+- [x] **NIHSS Hesaplayıcı** (tam çalışır halde)
+- [x] Açılış uyarısı, karanlık mod
 - ✅ **Senin işin:** APK'yı telefonuna kurmak, iki aracı denemek, geri bildirim vermek
 
 ### Sürüm 0.2: "İnme Merkezi" (sonraki 2–3 hafta)
@@ -320,4 +320,4 @@ Her hastalık veya ilaç kartı şu yolu izler:
 - [x] Tedavi kaydı → ünitede kullanılan isimsiz tedavi şemaları (Modül 7)
 - [x] Ek bölümler → hemşirelik tanıları, düşme ve bası yarası ölçekleri, acil durum kodları, JCI (Modül 8)
 - [x] İçerik kontrolü → kendi bilgimle teyit edeceğim; hekim kontrolü isteğe bağlı
-- [ ] Uygulamanın adı (öneriler: NöroCep, NöroRehber, NöroKılavuz, NöroAsist)
+- [ ] Uygulamanın adı: şimdilik **NöroCep** (öneriler: NöroCep, NöroRehber, NöroKılavuz, NöroAsist)
