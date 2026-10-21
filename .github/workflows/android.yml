@@ -76,9 +76,9 @@ jobs:
       - name: Sanal telefonda aç
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 33
           arch: x86_64
-          target: google_apis
+          target: default
           disable-animations: true
           script: |
             adb install -r NoroCep.apk
