@@ -18,6 +18,7 @@ enum CprEventType {
   shock,
   amiodarone,
   atropine,
+  otherDrug,
   airway,
   rosc,
   end,
@@ -59,12 +60,18 @@ class CprEvent {
     this.elapsed,
     this.label, {
     this.confirmed = true,
+    this.drugName,
+    this.dose,
   });
 
   final CprEventType type;
   final DateTime time;
   final Duration elapsed;
   final String label;
+
+  /// Yalnızca "diğer ilaç" kayıtlarında: ilacın adı ve (varsa) dozu.
+  final String? drugName;
+  final String? dose;
 
   /// `false`: planlanan zaman geçti ama kullanıcı işlemi onaylamadı.
   final bool confirmed;
@@ -107,6 +114,17 @@ class CprSession {
   int get shockCount => _count(CprEventType.shock);
   int get amiodaroneCount => _count(CprEventType.amiodarone);
   int get atropineCount => _count(CprEventType.atropine);
+
+  /// "Diğer ilaç" kayıtları, ilaç adına göre gruplanmış (kayıt sırasıyla).
+  Map<String, List<CprEvent>> get otherDrugs {
+    final groups = <String, List<CprEvent>>{};
+    for (final e in _events) {
+      if (e.type == CprEventType.otherDrug) {
+        groups.putIfAbsent(e.drugName!, () => []).add(e);
+      }
+    }
+    return groups;
+  }
 
   /// Planlı işlemin [index]. tekrarının CPR başlangıcından itibaren zamanı.
   static Duration slotTime(ScheduledTask task, int index) =>
@@ -197,6 +215,30 @@ class CprSession {
 
   void recordAtropine() =>
       _logNow(CprEventType.atropine, 'Atropin (${atropineCount + 1}. doz)');
+
+  /// Listede olmayan bir ilaç. [at] verilirse kayıt o ana yazılır (örneğin
+  /// butona basıldığı an; ilaç adı yazılırken geçen süre kayda yansımasın).
+  void recordOtherDrug(String name, {String? dose, Duration? at}) {
+    if (!isRunning) return;
+    final drug = name.trim();
+    if (drug.isEmpty) return;
+    final d = dose?.trim();
+    final doseText = d == null || d.isEmpty ? null : d;
+    final when = at == null || at > elapsed ? elapsed : at;
+    // Kayıt geriye dönük olabilir; zaman sırası korunarak araya eklenir.
+    final i = _events.indexWhere((e) => e.elapsed > when);
+    _events.insert(
+      i < 0 ? _events.length : i,
+      CprEvent(
+        CprEventType.otherDrug,
+        _startedAt!.add(when),
+        when,
+        doseText == null ? drug : '$drug $doseText',
+        drugName: drug,
+        dose: doseText,
+      ),
+    );
+  }
 
   void recordAirway() =>
       _logNow(CprEventType.airway, 'İleri havayolu / entübasyon');
@@ -307,6 +349,9 @@ class CprSession {
           '${missedAdrenaline > 0 ? ' · onaylanmayan planlı doz: $missedAdrenaline' : ''}',
       '• Amiodaron: $amiodaroneCount doz$amiodaroneMg',
       '• Atropin: $atropineCount doz',
+      for (final MapEntry(key: name, value: doses) in otherDrugs.entries)
+        '• $name: ${doses.length} doz'
+            '${_doseList(doses)}',
     ];
   }
 
@@ -358,6 +403,11 @@ class CprSession {
     return best;
   }
 
+  static String _doseList(List<CprEvent> doses) {
+    final given = [for (final e in doses) ?e.dose];
+    return given.isEmpty ? '' : ' (${given.join(' + ')})';
+  }
+
   int _count(CprEventType type) => _events.where((e) => e.type == type).length;
 
   void _logNow(CprEventType type, String label) {
@@ -366,7 +416,12 @@ class CprSession {
   }
 
   void _log(CprEventType type, String label, Duration at) {
-    _events.add(CprEvent(type, _startedAt!.add(at), at, label));
+    // Kayıt geriye dönük olabilir; zaman sırası korunarak araya eklenir.
+    final i = _events.indexWhere((e) => e.elapsed > at);
+    _events.insert(
+      i < 0 ? _events.length : i,
+      CprEvent(type, _startedAt!.add(at), at, label),
+    );
   }
 }
 

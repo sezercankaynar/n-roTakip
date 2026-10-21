@@ -30,11 +30,26 @@ void main() {
     await tester.pump();
     expect(find.text('Atropin (1)'), findsOneWidget);
 
+    await tester.tap(find.text('Diğer ilaç'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('Magnezyum sülfat'));
+    await tester.pump();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Doz (isteğe bağlı), ör. 2 g'),
+      '2 g',
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Magnezyum sülfat 2 g'), findsOneWidget);
+
     await tester.tap(find.text('ROSC'));
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('CPR Özeti'), findsOneWidget);
     expect(find.text('• Atropin: 1 doz'), findsOneWidget);
     expect(find.textContaining('Siklus sayısı'), findsOneWidget);
+    expect(find.text('• Magnezyum sülfat: 1 doz (2 g)'), findsOneWidget);
   });
 
   testWidgets('telefon ekranında taşma olmadan çizilir', (tester) async {

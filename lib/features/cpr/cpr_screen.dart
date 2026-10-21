@@ -106,6 +106,19 @@ class _CprScreenState extends State<CprScreen> {
     if (rhythm != null) _act(() => _session.setLastPulseRhythm(rhythm));
   }
 
+  Future<void> _otherDrug() async {
+    // Zaman butona basıldığı an alınır; ilaç adını yazmak kaydı geciktirmez.
+    final pressedAt = _session.elapsed;
+    HapticFeedback.selectionClick();
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (_) => _OtherDrugDialog(at: pressedAt),
+    );
+    if (result == null) return;
+    final (name, dose) = result;
+    _act(() => _session.recordOtherDrug(name, dose: dose, at: pressedAt));
+  }
+
   Future<void> _confirmEnd() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -227,6 +240,11 @@ class _CprScreenState extends State<CprScreen> {
               onPressed: () => _act(s.recordAtropine),
             ),
             _ActionButton(
+              icon: Icons.add_circle_outline,
+              label: 'Diğer ilaç',
+              onPressed: _otherDrug,
+            ),
+            _ActionButton(
               icon: Icons.air,
               label: 'Havayolu',
               onPressed: () => _act(s.recordAirway),
@@ -327,7 +345,8 @@ class _StartView extends StatelessWidget {
           'fazla 30 sn önce veya 60 sn sonra basarsanız kayda planlanan tam '
           'zaman yazılır. Basılmayan işlemler kayıtta "onaylanmadı" görünür.\n'
           '• Şok, amiodaron, atropin, havayolu ve ROSC tek dokunuşla saatiyle '
-          'kaydedilir.\n'
+          'kaydedilir. Listede olmayan ilaçlar "Diğer ilaç" ile adı ve dozu '
+          'yazılarak eklenir.\n'
           '• CPR süresince ekran kapanmaz.\n'
           '• Sonunda saat saat özet çıkar. Hasta bilgisi istenmez ve '
           'kayıt saklanmaz.',
@@ -442,6 +461,109 @@ class _ScheduleCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Diğer ilaç" kaydı: ilaç adı (zorunlu) ve doz (isteğe bağlı).
+class _OtherDrugDialog extends StatefulWidget {
+  const _OtherDrugDialog({required this.at});
+
+  final Duration at;
+
+  @override
+  State<_OtherDrugDialog> createState() => _OtherDrugDialogState();
+}
+
+class _OtherDrugDialogState extends State<_OtherDrugDialog> {
+  static const _suggestions = [
+    'Sodyum bikarbonat',
+    'Kalsiyum glukonat',
+    'Kalsiyum klorür',
+    'Magnezyum sülfat',
+    'Lidokain',
+    'Sıvı bolus (SF)',
+  ];
+
+  final _name = TextEditingController();
+  final _dose = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _name.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _dose.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_name.text.trim().isEmpty) return;
+    Navigator.pop(context, (_name.text, _dose.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Diğer ilaç · ${formatDuration(widget.at)}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final n in _suggestions)
+                  ChoiceChip(
+                    label: Text(n),
+                    selected: _name.text == n,
+                    onSelected: (_) => _name.text = n,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _name,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'İlaç adı',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _dose,
+              decoration: const InputDecoration(
+                labelText: 'Doz (isteğe bağlı), ör. 2 g',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Kayda butona bastığınız an (${formatDuration(widget.at)}) '
+              'yazılır.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Vazgeç'),
+        ),
+        FilledButton(
+          onPressed: _name.text.trim().isEmpty ? null : _save,
+          child: const Text('Kaydet'),
+        ),
+      ],
     );
   }
 }

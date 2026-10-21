@@ -186,4 +186,27 @@ void main() {
     expect(lines, contains('• Amiodaron: 2 doz (300 mg + 150 mg)'));
     expect(lines, contains('• Atropin: 1 doz'));
   });
+
+  test('diğer ilaç basış anına yazılır ve özette gruplanır', () {
+    at(1, 10);
+    final pressed = s.elapsed;
+    at(1, 40); // ilaç adı yazılırken geçen süre
+    s.recordOtherDrug('Magnezyum sülfat', dose: '2 g', at: pressed);
+    at(4, 5);
+    s.recordOtherDrug('Sodyum bikarbonat ', dose: ' ');
+    at(6);
+    s.recordOtherDrug('Magnezyum sülfat', dose: '1 g');
+    s.recordOtherDrug('   ');
+
+    final drugs = s.timeline.where((e) => e.type == CprEventType.otherDrug);
+    expect(drugs.map((e) => e.label), [
+      'Magnezyum sülfat 2 g',
+      'Sodyum bikarbonat',
+      'Magnezyum sülfat 1 g',
+    ]);
+    expect(drugs.first.elapsed, const Duration(minutes: 1, seconds: 10));
+    final lines = s.summaryLines();
+    expect(lines, contains('• Magnezyum sülfat: 2 doz (2 g + 1 g)'));
+    expect(lines, contains('• Sodyum bikarbonat: 1 doz'));
+  });
 }
