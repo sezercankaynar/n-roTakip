@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../content/content_screen.dart';
 import 'thrombolysis_checklist.dart';
+import 'vascular_map_screen.dart';
 
 class _Entry {
   const _Entry(this.title, this.icon, {this.asset, this.screen, this.soon});
@@ -28,6 +29,7 @@ const _sections = <(String, List<_Entry>)>[
       ),
     ],
   ),
+  ('Görsel', [_Entry('Beyin Damar Haritası', Icons.hub, screen: _vascularMap)]),
   (
     'İnme tipleri',
     [
@@ -78,7 +80,6 @@ const _sections = <(String, List<_Entry>)>[
   (
     'Hazırlanıyor',
     [
-      _Entry('Beyin Damar Haritası', Icons.hub, soon: '0.2.1'),
       _Entry('Trombektomi: adım adım görsel', Icons.animation, soon: '0.2.2'),
       _Entry('İzlem Takip Zamanlayıcısı', Icons.alarm, soon: '0.2.2'),
     ],
@@ -86,6 +87,8 @@ const _sections = <(String, List<_Entry>)>[
 ];
 
 Widget _checklist(BuildContext _) => const ThrombolysisChecklistScreen();
+
+Widget _vascularMap(BuildContext _) => const VascularMapScreen();
 
 class StrokeCenterScreen extends StatelessWidget {
   const StrokeCenterScreen({super.key});

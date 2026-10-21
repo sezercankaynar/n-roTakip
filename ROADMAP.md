@@ -241,7 +241,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 ### Sürüm 0.2: "İnme Merkezi" (sonraki 2–3 hafta)
 - [x] İçerik altyapısı: kaynak, onay durumu, son kontrol tarihi
 - [x] İnme tipleri içeriği (taslak; senin onayın bekleniyor)
-- [ ] Etkileşimli beyin damar haritası
+- [x] Etkileşimli beyin damar haritası (beyin kesiti ve Willis poligonu)
 - [ ] Trombektomi adım adım görsel anlatımı
 - [x] Trombolitik tedavi kontrol listesi
 - [x] Post-op ve post-tedavi takip çizelgesi

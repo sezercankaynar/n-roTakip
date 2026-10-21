@@ -26,7 +26,7 @@ Belirtiler tıkanan damara göre değişir ve **aniden** başlar:
 - Denge kaybı, baş dönmesi, koordinasyon bozukluğu
 - Bilinç bulanıklığı
 
-Damar bölgelerine göre ayrıntılı belirtiler **Beyin Damar Haritası** bölümünde anlatılacaktır.
+Damar bölgelerine göre ayrıntılı belirtiler için: **Beyin Damar Haritası**.
 
 ## Tanı
 - **Beyin BT (kontrastsız):** kanamayı dışlamak için ilk ve en hızlı tetkik. Erken iskemide BT normal olabilir.
