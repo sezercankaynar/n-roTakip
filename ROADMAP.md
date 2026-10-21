@@ -107,6 +107,22 @@ Resüsitasyon sırasında tek elle ve hızlıca kullanılabilecek şekilde tasar
 - CPR sürerken ekran kapanmaz
 - Kaynak: güncel AHA ve ERC resüsitasyon kılavuzları
 
+**Resüsitasyon bilgi bölümü** (sonraki sürümlerde, CPR ekranından erişilecek)
+- [ ] **EKG ritimleri:** VF, nabızsız VT, asistoli, NEA, sinüs bradikardisi, AV bloklar, SVT, AF/flutter, geniş QRS'li taşikardi, torsades de pointes. Her biri için çizilmiş örnek trase, tanıma ipuçları, şoklanabilir mi, ne yapılır.
+- [ ] **Defibrilasyon:** endikasyon, bifazik/monofazik enerji dozları, ped yerleşimi, güvenlik ("herkes uzak").
+- [ ] **Senkronize kardiyoversiyon:** endikasyon (nabızlı, stabil olmayan taşikardi), enerji dozları, sedasyon, senkronizasyon tuşu.
+- [ ] **Antiaritmik ilaçlar:** amiodaron (arrest ve nabızlı taşikardi dozları, hazırlama, yan etkiler), lidokain, magnezyum (torsades), adenozin (SVT).
+- [ ] **Bradikardi ve taşikardi algoritmaları** (nabızlı hasta): atropin, transkutan pace, dopamin/adrenalin infüzyonu.
+- [ ] **ROSC sonrası bakım:** oksijen ve ventilasyon hedefleri, kan basıncı hedefi, 12 derivasyon EKG, sıcaklık kontrolü, nörolojik değerlendirme.
+
+**CPR zamanlayıcı için aday geliştirmeler** (önceliği ürün sahibi belirleyecek)
+- [ ] Şoklanabilir ritim seçilince şok hatırlatması; 3. ve 5. şoktan sonra amiodaron hatırlatması
+- [ ] Damar yolu/IO, ETCO₂ değeri ve "diğer ilaç" (bikarbonat, kalsiyum, magnezyum, sıvı) kaydı
+- [ ] İşaretlenebilir 4H4T kontrol listesi; işaretlenenler özete eklenir
+- [ ] Sonlandırma nedeni (ROSC, exitus, transfer) ve kalite süreleri (ilk kompresyon, ilk şok)
+- [ ] Sesli uyarı ("Nabız kontrolü zamanı") ve ekran kilitliyken bildirim
+- [ ] Özeti PDF olarak paylaşma
+
 ### Modül 3: 📋 Ölçekler (NIHSS ve diğerleri)
 İlk ölçek NIHSS. Hemşirelik ölçekleri (düşme, bası yarası, yutma) Modül 8'de anlatılıyor ama bu ekranda da listelenecek.
 
