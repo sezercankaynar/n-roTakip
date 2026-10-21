@@ -57,3 +57,47 @@ jobs:
             Kurulum adımları: README.md
           files: NoroCep.apk
           make_latest: true
+
+  # Derlenen APK'yı sanal bir Android telefonda açıp ana ekranın geldiğini doğrular.
+  smoke-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: NoroCep-apk
+
+      - name: KVM'i etkinleştir
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Sanal telefonda aç
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install -r NoroCep.apk
+            adb logcat -c
+            adb shell am start -n com.sezercankaynar.norocep/.MainActivity
+            sleep 30
+            adb exec-out screencap -p > screen.png
+            adb shell uiautomator dump /sdcard/ui.xml || true
+            adb shell cat /sdcard/ui.xml > ui.xml || true
+            echo "===== LOGCAT ====="
+            adb logcat -d | grep -iE "flutter|AndroidRuntime|FATAL|norocep|dart|jni" | tail -300
+            echo "===== EKRAN METNİ ====="
+            grep -o 'text="[^"]*"' ui.xml | head -40 || true
+            grep -q "Sağlık profesyoneliyim" ui.xml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-ekran
+          path: |
+            screen.png
+            ui.xml
