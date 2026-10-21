@@ -6,6 +6,32 @@ Nörolojik hastalığı olan kişilerin (epilepsi, migren, MS, Parkinson vb.) se
 
 ---
 
+## Sade Anlatım: Nasıl Çalışacağız?
+
+**İş bölümü**
+- **Sen:** Uygulamanın ne yapması gerektiğini anlatırsın. Ekranları ve özellikleri dener, beğenip beğenmediğini söylersin.
+- **Claude:** Bütün teknik kararları verir, kodu yazar, uygulamayı derleyip telefonuna kurulabilir hale getirir, yaptığı her şeyi sade bir dille anlatır.
+
+**Verilen teknik kararlar (ve neden)**
+| Konu | Karar | Sade açıklama |
+|---|---|---|
+| Uygulamanın yapılacağı araç | **Flutter** (Google, ücretsiz) | Tek seferde yazılan kod hem Android'de hem iPhone'da çalışır. |
+| Verilerin tutulacağı yer | **Önce sadece telefonda** | İlk sürümde sunucu yok. Bilgiler kullanıcının kendi telefonunda kalır. Ücretsizdir, en güvenli yoldur ve yasal yükü azaltır. Telefon kaybolursa veri gitmesin diye "yedek dosyası al" özelliği olacak. |
+| Uygulamanın derlenmesi | **GitHub Actions** (ücretsiz) | Her kod değişikliğinden sonra GitHub, telefona kurulabilen dosyayı (Android için APK) otomatik hazırlar. Sen sadece indirip kurarsın. |
+| Sunucu (ileride, gerekirse) | **Supabase** ücretsiz paketi | Hekimle paylaşım veya çoklu cihaz gerekirse eklenir. |
+
+**Maliyet**
+| Kalem | Ücret | Ne zaman gerekir? |
+|---|---|---|
+| Flutter, GitHub, kod yazımı ve test | Ücretsiz | Hemen |
+| Android telefona doğrudan kurup denemek | Ücretsiz | Hemen |
+| Google Play'de yayınlamak | Tek seferlik yaklaşık 25 $ | Herkese açmak istediğinde |
+| App Store'da (iPhone) yayınlamak | Yıllık yaklaşık 99 $ | iPhone kullanıcılarına açmak istediğinde |
+
+Mağaza ücretleri, uygulamayı herkese açmaya karar verene kadar gerekmez. Bu yüzden yol haritasında **önce Android** ile ilerleyeceğiz.
+
+---
+
 ## 0. Ürün Vizyonu
 
 **Sorun:** Hastalar nöbetlerini, ağrı ataklarını ve ilaç dozlarını çoğunlukla hatırlayarak ya da kâğıda not ederek takip ediyor. Kontrol muayenesinde hekime eksik ve dağınık bilgi ulaşıyor.
@@ -35,12 +61,14 @@ Nörolojik hastalığı olan kişilerin (epilepsi, migren, MS, Parkinson vb.) se
 | React Native (Expo) | JS/TS ekipleri için tanıdık; OTA güncelleme; web paneliyle kod paylaşımı | Native modüllerde (sağlık API'leri, arka plan) ek uğraş |
 | Native (Swift + Kotlin) | En iyi performans ve platform entegrasyonu | İki ayrı kod tabanı, yaklaşık iki kat maliyet |
 
-**Öneri:** Flutter. Ekip JS/TS ağırlıklıysa ve ileride bir web hekim paneli planlanıyorsa React Native (Expo) da makul bir seçimdir.
+**✅ Karar: Flutter.** Ücretsiz, tek kod tabanı, sağlık API'leri ve bildirimler için olgun paketler var.
 
 **Backend seçenekleri**
 - **Supabase** (Postgres, Auth, Storage, Row Level Security): hızlı başlangıç, SQL, kendi sunucusunda barındırılabilir. KVKK için Türkiye veya AB'de barındırma kolay. **Önerilen.**
 - Firebase: çok hızlı başlangıç, ancak veri yurt dışında tutulur ve sorgu yetenekleri sınırlıdır.
 - Özel backend (NestJS veya FastAPI + Postgres): tam kontrol sağlar, ancak daha uzun sürer.
+
+**✅ Karar: MVP'de backend yok.** Veriler cihazda yerel SQLite veritabanında (Drift) tutulur; yedekleme ve geri yükleme dosyayla yapılır. Hekim paneli veya senkronizasyon gerektiğinde Supabase ücretsiz paketi eklenecek. Sonuç: sıfır sunucu maliyeti, kimlik doğrulamaya gerek yok, sağlık verisi cihazdan çıkmadığı için KVKK yükü çok daha az.
 
 ### 1.2 Yasal çerçeve (Türkiye)
 - **KVKK:** Sağlık verisi *özel nitelikli kişisel veri* sayılır. Açık rıza, aydınlatma metni, VERBİS kaydı (eşik aşılırsa), veri işleme envanteri ve yurt dışına aktarım kuralları gerekir.
@@ -216,8 +244,14 @@ Faz 5                                     ███
 ---
 
 ## 7. Açık Sorular
-- [ ] MVP hangi hastalığa odaklanacak?
-- [ ] Ekip yapısı ve bütçe nedir?
-- [ ] Gelir modeli ne olacak: ücretsiz, freemium (gelişmiş raporlar veya bakım veren özelliği ücretli) ya da kurumsal (klinik lisansı)?
-- [ ] Bir hekim veya klinikle iş birliği yapılacak mı (danışman, pilot uygulama)?
-- [ ] Teknoloji: Flutter mı, React Native mi?
+
+**Teknik (cevaplandı)**
+- [x] Teknoloji: Flutter
+- [x] Ekip: geliştirme Claude'da, ürün sahibi ve test eden kullanıcı sensin
+- [x] Bütçe: olabildiğince ücretsiz; önce Android, sunucusuz başlıyoruz
+
+**Ürün (senin anlatman gerekenler)**
+- [ ] Uygulamayı kim kullanacak ve hangi hastalık için?
+- [ ] Kullanıcı neleri kaydetmek isteyecek?
+- [ ] Telefon tipi: Android mi, iPhone mu?
+- [ ] Gelir modeli ileride düşünülecek
