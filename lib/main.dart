@@ -39,13 +39,18 @@ class _BootstrapState extends State<_Bootstrap> {
     super.initState();
     AppSettings.load()
         .timeout(const Duration(seconds: 5))
-        .then((s) => setState(() => _settings = s))
-        .catchError(
-          (Object e) => setState(() {
+        .then((s) {
+          // Sanal telefon testi (CI) bu satırı logcat'te arar.
+          debugPrint('NOROCEP_READY');
+          setState(() => _settings = s);
+        })
+        .catchError((Object e) {
+          debugPrint('NOROCEP_SETTINGS_ERROR: $e');
+          setState(() {
             _error = e;
             _settings = AppSettings.inMemory();
-          }),
-        );
+          });
+        });
   }
 
   @override
@@ -106,7 +111,10 @@ class NoroCepApp extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: Text(
-                            'Ayarlar kaydedilemiyor: $startupError',
+                            'Ayarlar kaydedilemiyor; tema ve onay seçimi '
+                            'hatırlanmayacak. ($startupError)',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,

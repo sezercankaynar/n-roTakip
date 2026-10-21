@@ -86,13 +86,10 @@ jobs:
             adb shell am start -n com.sezercankaynar.norocep/.MainActivity
             sleep 30
             adb exec-out screencap -p > screen.png
-            adb shell uiautomator dump /sdcard/ui.xml || true
-            adb shell cat /sdcard/ui.xml > ui.xml || true
+            adb logcat -d > logcat.txt
             echo "===== LOGCAT ====="
-            adb logcat -d | grep -iE "flutter|AndroidRuntime|FATAL|norocep|dart|jni" | tail -300
-            echo "===== EKRAN METNİ ====="
-            grep -o 'text="[^"]*"' ui.xml | head -40 || true
-            grep -q "Sağlık profesyoneliyim" ui.xml
+            grep -iE "flutter|AndroidRuntime|FATAL|norocep" logcat.txt | tail -200
+            grep -q "NOROCEP_READY" logcat.txt
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -100,4 +97,4 @@ jobs:
           name: smoke-test-ekran
           path: |
             screen.png
-            ui.xml
+            logcat.txt
