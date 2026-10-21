@@ -1,15 +1,23 @@
 /// CPR zamanlayıcısının mantığı. Arayüzden bağımsızdır ve test edilebilir.
 ///
+/// Nabız kontrolü ve adrenalin sabit bir takvime göre planlanır
+/// (2. 4. 6. dakika... ve 3. 6. 9. dakika...). Kullanıcı işlemi yaptığında
+/// butona basar; basış planlanan zamana yakınsa kayda saniyeler kaymadan
+/// planlanan tam zaman yazılır. Basılmayan planlı işlemler kayıtta
+/// "onaylanmadı" olarak görünür; böylece yapılmamış bir işlem yapılmış gibi
+/// kaydedilmez.
+///
 /// Süreler duvar saatinden (clock) hesaplanır; böylece uygulama arka plana
 /// geçse veya ekran donsa bile sayaçlar doğru kalır.
 library;
 
 enum CprEventType {
   start,
-  rhythmCheck,
+  pulseCheck,
   adrenaline,
   shock,
   amiodarone,
+  atropine,
   airway,
   rosc,
   end,
@@ -25,61 +33,58 @@ enum Rhythm {
   final String label;
 }
 
-/// Adrenalin zamanlaması (AHA/ERC: 3–5 dakikada bir).
-enum AdrenalineStatus {
-  /// Henüz verilmedi.
-  notGiven,
+/// Takvime bağlı işlemler.
+enum ScheduledTask {
+  pulseCheck(Duration(minutes: 2), 'Nabız kontrolü'),
+  adrenaline(Duration(minutes: 3), 'Adrenalin 1 mg');
 
-  /// Son dozdan bu yana 3 dakikadan az geçti.
-  waiting,
+  const ScheduledTask(this.interval, this.label);
 
-  /// 3–5 dakika aralığında: doz verilebilir.
-  window,
-
-  /// 5 dakika geçti: doz gecikiyor.
-  overdue,
+  final Duration interval;
+  final String label;
 }
 
-enum CprAlert {
-  /// 2 dakikalık döngü doldu: ritim ve nabız kontrolü.
-  rhythmCheckDue,
-
-  /// Son adrenalinden bu yana 3 dakika geçti.
-  adrenalineWindowOpen,
-
-  /// Son adrenalinden bu yana 5 dakika geçti.
-  adrenalineOverdue,
-}
+enum CprAlert { pulseCheckDue, adrenalineDue }
 
 class CprEvent {
-  const CprEvent(this.type, this.time, this.elapsed, this.label);
+  const CprEvent(
+    this.type,
+    this.time,
+    this.elapsed,
+    this.label, {
+    this.confirmed = true,
+  });
 
   final CprEventType type;
   final DateTime time;
   final Duration elapsed;
   final String label;
+
+  /// `false`: planlanan zaman geçti ama kullanıcı işlemi onaylamadı.
+  final bool confirmed;
 }
 
 class CprSession {
   CprSession({DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
 
-  static const cycleLength = Duration(minutes: 2);
-  static const adrenalineMinInterval = Duration(minutes: 3);
-  static const adrenalineMaxInterval = Duration(minutes: 5);
+  /// Planlanan zamandan en fazla bu kadar önce basılırsa o zamana yazılır.
+  static const earlyTolerance = Duration(seconds: 30);
+
+  /// Planlanan zamandan en fazla bu kadar sonra basılırsa o zamana yazılır.
+  /// Daha geç basışlar gerçek saatiyle "ek" olarak kaydedilir.
+  static const lateTolerance = Duration(seconds: 60);
 
   final DateTime Function() _clock;
-  final List<CprEvent> events = [];
+  final List<CprEvent> _events = [];
 
   DateTime? _startedAt;
   DateTime? _endedAt;
-  DateTime? _cycleStart;
-  DateTime? _lastAdrenaline;
-  int _cycleNumber = 0;
+
+  // Onaylanan planlı işlemlerin sıra numaraları (1 = ilk planlı zaman).
+  final _confirmed = {for (final t in ScheduledTask.values) t: <int>{}};
 
   // pollAlerts() içinde aynı uyarının tekrar verilmemesi için.
-  int _alertedCycle = 0;
-  DateTime? _windowAlertedFor;
-  DateTime? _overdueAlertedFor;
+  final _alerted = {for (final t in ScheduledTask.values) t: 0};
 
   bool get hasStarted => _startedAt != null;
   bool get isRunning => _startedAt != null && _endedAt == null;
@@ -91,120 +96,161 @@ class CprSession {
     return (_endedAt ?? _clock()).difference(_startedAt!);
   }
 
-  /// Şu anki döngünün sırası (1'den başlar).
-  int get cycleNumber => _cycleNumber;
-
-  Duration get cycleElapsed {
-    if (_cycleStart == null) return Duration.zero;
-    return (_endedAt ?? _clock()).difference(_cycleStart!);
-  }
-
-  /// Döngü sonuna kalan süre; süre dolduysa negatif olur.
-  Duration get cycleRemaining => cycleLength - cycleElapsed;
-
-  bool get rhythmCheckDue => isRunning && cycleElapsed >= cycleLength;
-
   int get adrenalineCount => _count(CprEventType.adrenaline);
+  int get pulseCheckCount => _count(CprEventType.pulseCheck);
   int get shockCount => _count(CprEventType.shock);
   int get amiodaroneCount => _count(CprEventType.amiodarone);
+  int get atropineCount => _count(CprEventType.atropine);
 
-  Duration? get sinceAdrenaline {
-    if (_lastAdrenaline == null) return null;
-    return (_endedAt ?? _clock()).difference(_lastAdrenaline!);
+  /// Planlı işlemin [index]. tekrarının CPR başlangıcından itibaren zamanı.
+  static Duration slotTime(ScheduledTask task, int index) =>
+      task.interval * index;
+
+  /// Zamanı gelmiş, tolerans süresi dolmamış ve henüz onaylanmamış planlı
+  /// işlem (yoksa `null`). Arayüzde "ŞİMDİ" uyarısı için kullanılır.
+  int? dueSlot(ScheduledTask task) {
+    if (!isRunning) return null;
+    final e = elapsed;
+    final last = e.inMilliseconds ~/ task.interval.inMilliseconds;
+    if (last < 1) return null;
+    final lateStart = e - lateTolerance;
+    for (var k = last; k >= 1 && slotTime(task, k) >= lateStart; k--) {
+      if (!_confirmed[task]!.contains(k)) return k;
+    }
+    return null;
   }
 
-  AdrenalineStatus get adrenalineStatus {
-    final since = sinceAdrenaline;
-    if (since == null) return AdrenalineStatus.notGiven;
-    if (since < adrenalineMinInterval) return AdrenalineStatus.waiting;
-    if (since < adrenalineMaxInterval) return AdrenalineStatus.window;
-    return AdrenalineStatus.overdue;
+  /// Bir sonraki planlı zamana kalan süre.
+  Duration untilNext(ScheduledTask task) {
+    final e = elapsed;
+    final next = e.inMilliseconds ~/ task.interval.inMilliseconds + 1;
+    return slotTime(task, next) - e;
   }
 
   void start() {
     if (hasStarted) return;
-    final now = _clock();
-    _startedAt = now;
-    _cycleStart = now;
-    _cycleNumber = 1;
-    _log(CprEventType.start, 'CPR başladı');
+    _startedAt = _clock();
+    _log(CprEventType.start, 'CPR başladı', Duration.zero);
   }
 
-  /// Ritim/nabız kontrolü yapıldı; yeni 2 dakikalık döngü başlar.
-  void recordRhythmCheck(Rhythm rhythm) {
+  /// Nabız kontrolü yapıldı. Ritim isteğe bağlı olarak sonradan
+  /// [setLastPulseRhythm] ile eklenir.
+  void recordPulseCheck() {
     if (!isRunning) return;
-    _log(CprEventType.rhythmCheck, 'Ritim kontrolü: ${rhythm.label}');
-    if (rhythm == Rhythm.pulse) {
-      recordRosc();
-      return;
-    }
-    _cycleStart = _clock();
-    _cycleNumber++;
+    _recordScheduled(
+      ScheduledTask.pulseCheck,
+      CprEventType.pulseCheck,
+      'Nabız kontrolü',
+    );
+  }
+
+  /// Son nabız kontrolü kaydına ritmi ekler (basış anı korunur).
+  /// "Nabız var" seçilirse CPR ROSC ile sona erer.
+  void setLastPulseRhythm(Rhythm rhythm) {
+    if (!isRunning) return;
+    final i = _events.lastIndexWhere((e) => e.type == CprEventType.pulseCheck);
+    if (i < 0) return;
+    final old = _events[i];
+    final suffix = old.label.endsWith(' (ek)') ? ' (ek)' : '';
+    final base = suffix.isEmpty
+        ? old.label
+        : old.label.substring(0, old.label.length - suffix.length);
+    _events[i] = CprEvent(
+      old.type,
+      old.time,
+      old.elapsed,
+      '$base: ${rhythm.label}$suffix',
+    );
+    if (rhythm == Rhythm.pulse) recordRosc();
   }
 
   void recordAdrenaline() {
     if (!isRunning) return;
-    _lastAdrenaline = _clock();
-    _log(
+    _recordScheduled(
+      ScheduledTask.adrenaline,
       CprEventType.adrenaline,
       'Adrenalin 1 mg (${adrenalineCount + 1}. doz)',
     );
   }
 
-  void recordShock() {
-    if (!isRunning) return;
-    _log(CprEventType.shock, 'Şok (${shockCount + 1}. şok)');
-  }
+  void recordShock() =>
+      _logNow(CprEventType.shock, 'Şok (${shockCount + 1}. şok)');
 
   void recordAmiodarone() {
-    if (!isRunning) return;
     final label = switch (amiodaroneCount) {
       0 => 'Amiodaron 300 mg (1. doz)',
       1 => 'Amiodaron 150 mg (2. doz)',
       _ => 'Amiodaron (${amiodaroneCount + 1}. doz)',
     };
-    _log(CprEventType.amiodarone, label);
+    _logNow(CprEventType.amiodarone, label);
   }
 
-  void recordAirway() {
-    if (!isRunning) return;
-    _log(CprEventType.airway, 'İleri havayolu / entübasyon');
-  }
+  void recordAtropine() =>
+      _logNow(CprEventType.atropine, 'Atropin (${atropineCount + 1}. doz)');
+
+  void recordAirway() =>
+      _logNow(CprEventType.airway, 'İleri havayolu / entübasyon');
 
   void recordRosc() {
     if (!isRunning) return;
-    _log(CprEventType.rosc, 'ROSC (spontan dolaşımın geri dönüşü)');
+    _logNow(CprEventType.rosc, 'ROSC (spontan dolaşımın geri dönüşü)');
     _endedAt = _clock();
   }
 
   void end() {
     if (!isRunning) return;
-    _log(CprEventType.end, 'CPR sonlandırıldı');
+    _logNow(CprEventType.end, 'CPR sonlandırıldı');
     _endedAt = _clock();
   }
 
-  /// Son çağrıdan bu yana yeni oluşan uyarıları döndürür (her uyarı bir kez).
+  /// Son çağrıdan bu yana zamanı gelen planlı işlemler (her biri bir kez).
   List<CprAlert> pollAlerts() {
     if (!isRunning) return const [];
     final alerts = <CprAlert>[];
-    if (rhythmCheckDue && _alertedCycle != _cycleNumber) {
-      _alertedCycle = _cycleNumber;
-      alerts.add(CprAlert.rhythmCheckDue);
-    }
-    final last = _lastAdrenaline;
-    if (last != null) {
-      final status = adrenalineStatus;
-      if (status == AdrenalineStatus.overdue && _overdueAlertedFor != last) {
-        _overdueAlertedFor = last;
-        _windowAlertedFor = last;
-        alerts.add(CprAlert.adrenalineOverdue);
-      } else if (status == AdrenalineStatus.window &&
-          _windowAlertedFor != last) {
-        _windowAlertedFor = last;
-        alerts.add(CprAlert.adrenalineWindowOpen);
+    for (final task in ScheduledTask.values) {
+      final reached = elapsed.inMilliseconds ~/ task.interval.inMilliseconds;
+      if (reached > _alerted[task]!) {
+        _alerted[task] = reached;
+        alerts.add(switch (task) {
+          ScheduledTask.pulseCheck => CprAlert.pulseCheckDue,
+          ScheduledTask.adrenaline => CprAlert.adrenalineDue,
+        });
       }
     }
     return alerts;
+  }
+
+  /// Kayıtlar ve süresi dolup onaylanmamış planlı işlemler, zamana göre sıralı.
+  List<CprEvent> get timeline {
+    final start = _startedAt;
+    if (start == null) return const [];
+    final items = [..._events];
+    final e = elapsed;
+    for (final task in ScheduledTask.values) {
+      for (var k = 1; slotTime(task, k) <= e; k++) {
+        final t = slotTime(task, k);
+        final expired = hasEnded || t + lateTolerance < e;
+        if (expired && !_confirmed[task]!.contains(k)) {
+          items.add(
+            CprEvent(
+              task == ScheduledTask.pulseCheck
+                  ? CprEventType.pulseCheck
+                  : CprEventType.adrenaline,
+              start.add(t),
+              t,
+              '${task.label} zamanı (onaylanmadı)',
+              confirmed: false,
+            ),
+          );
+        }
+      }
+    }
+    items.sort((a, b) {
+      final c = a.elapsed.compareTo(b.elapsed);
+      // Aynı saniyede başlangıç ve bitiş kayıtları doğru sırada kalsın.
+      return c != 0 ? c : a.type.index.compareTo(b.type.index);
+    });
+    return items;
   }
 
   /// Hasta dosyasına aktarılabilecek düz metin özet (kişisel veri içermez).
@@ -215,11 +261,12 @@ class CprSession {
       b.writeln('Toplam süre: ${formatDuration(elapsed)}');
     }
     b.writeln(
-      'Adrenalin: $adrenalineCount doz · Şok: $shockCount · '
-      'Amiodaron: $amiodaroneCount doz',
+      'Nabız kontrolü: $pulseCheckCount · Adrenalin: $adrenalineCount '
+      'doz · Şok: $shockCount · Amiodaron: $amiodaroneCount doz · '
+      'Atropin: $atropineCount doz',
     );
     b.writeln();
-    for (final e in events) {
+    for (final e in timeline) {
       b.writeln(
         '${formatClock(e.time)}  (+${formatDuration(e.elapsed)})  '
         '${e.label}',
@@ -228,11 +275,45 @@ class CprSession {
     return b.toString();
   }
 
-  int _count(CprEventType type) => events.where((e) => e.type == type).length;
+  void _recordScheduled(ScheduledTask task, CprEventType type, String label) {
+    final e = elapsed;
+    final slot = _matchingSlot(task, e);
+    if (slot == null) {
+      _log(type, '$label (ek)', e);
+      return;
+    }
+    _confirmed[task]!.add(slot);
+    _log(type, label, slotTime(task, slot));
+  }
 
-  void _log(CprEventType type, String label) {
-    final now = _clock();
-    events.add(CprEvent(type, now, now.difference(_startedAt!), label));
+  /// [e] anındaki basışın ait olduğu planlı işlem: tolerans aralığında olan,
+  /// onaylanmamış ve zamanı basışa en yakın olan.
+  int? _matchingSlot(ScheduledTask task, Duration e) {
+    int? best;
+    Duration? bestDiff;
+    final ms = task.interval.inMilliseconds;
+    final from = ((e - lateTolerance).inMilliseconds / ms).ceil();
+    final to = ((e + earlyTolerance).inMilliseconds / ms).floor();
+    for (var k = from < 1 ? 1 : from; k <= to; k++) {
+      if (_confirmed[task]!.contains(k)) continue;
+      final diff = (slotTime(task, k) - e).abs();
+      if (bestDiff == null || diff < bestDiff) {
+        best = k;
+        bestDiff = diff;
+      }
+    }
+    return best;
+  }
+
+  int _count(CprEventType type) => _events.where((e) => e.type == type).length;
+
+  void _logNow(CprEventType type, String label) {
+    if (!isRunning) return;
+    _log(type, label, elapsed);
+  }
+
+  void _log(CprEventType type, String label, Duration at) {
+    _events.add(CprEvent(type, _startedAt!.add(at), at, label));
   }
 }
 

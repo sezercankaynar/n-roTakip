@@ -15,6 +15,13 @@ const _cprSources = [
       'Support. Resuscitation. 2025.',
 ];
 
+/// CPR sırasında ekranın kapanmasını engeller; başarısız olursa sessizce geçer.
+void _setWakelock(bool on) {
+  WakelockPlus.toggle(enable: on).catchError((Object e) {
+    debugPrint('Ekran kilidi ayarlanamadı: $e');
+  });
+}
+
 class CprScreen extends StatefulWidget {
   const CprScreen({super.key});
 
@@ -31,34 +38,26 @@ class _CprScreenState extends State<CprScreen> {
   void dispose() {
     _ticker?.cancel();
     _sounds.dispose();
-    WakelockPlus.disable();
+    _setWakelock(false);
     super.dispose();
   }
 
   void _start() {
     setState(_session.start);
-    WakelockPlus.enable();
+    _setWakelock(true);
     HapticFeedback.heavyImpact();
     _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) => _tick());
   }
 
   void _tick() {
-    for (final alert in _session.pollAlerts()) {
-      switch (alert) {
-        case CprAlert.rhythmCheckDue:
-        case CprAlert.adrenalineOverdue:
-          _sounds.alarm();
-        case CprAlert.adrenalineWindowOpen:
-          _sounds.chime();
-      }
-    }
+    if (_session.pollAlerts().isNotEmpty) _sounds.alarm();
     setState(() {});
   }
 
   void _stopped() {
     _ticker?.cancel();
     _sounds.setMetronome(false);
-    WakelockPlus.disable();
+    _setWakelock(false);
   }
 
   void _act(VoidCallback action) {
@@ -67,7 +66,9 @@ class _CprScreenState extends State<CprScreen> {
     if (_session.hasEnded) _stopped();
   }
 
-  Future<void> _rhythmCheck() async {
+  Future<void> _pulseCheck() async {
+    // Kayıt basış anında yapılır; ritim seçimi isteğe bağlıdır.
+    _act(_session.recordPulseCheck);
     final rhythm = await showModalBottomSheet<Rhythm>(
       context: context,
       showDragHandle: true,
@@ -78,7 +79,7 @@ class _CprScreenState extends State<CprScreen> {
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
-                'Ritim / nabız kontrolü sonucu',
+                'Nabız kontrolü kaydedildi. Ritim? (isteğe bağlı)',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
             ),
@@ -92,12 +93,17 @@ class _CprScreenState extends State<CprScreen> {
                 title: Text(r.label),
                 onTap: () => Navigator.pop(context, r),
               ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('Ritim belirtmeden devam et'),
+              onTap: () => Navigator.pop(context),
+            ),
             const SizedBox(height: 8),
           ],
         ),
       ),
     );
-    if (rhythm != null) _act(() => _session.recordRhythmCheck(rhythm));
+    if (rhythm != null) _act(() => _session.setLastPulseRhythm(rhythm));
   }
 
   Future<void> _confirmEnd() async {
@@ -179,9 +185,23 @@ class _CprScreenState extends State<CprScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        _CycleCard(session: s, onCheck: _rhythmCheck),
+        _ScheduleCard(
+          session: s,
+          task: ScheduledTask.pulseCheck,
+          icon: Icons.monitor_heart,
+          count: s.pulseCheckCount,
+          buttonLabel: 'Nabız kontrolü yapıldı',
+          onPressed: _pulseCheck,
+        ),
         const SizedBox(height: 8),
-        _AdrenalineCard(session: s, onGiven: () => _act(s.recordAdrenaline)),
+        _ScheduleCard(
+          session: s,
+          task: ScheduledTask.adrenaline,
+          icon: Icons.vaccines,
+          count: s.adrenalineCount,
+          buttonLabel: 'Adrenalin yapıldı (1 mg)',
+          onPressed: () => _act(s.recordAdrenaline),
+        ),
         const SizedBox(height: 8),
         GridView.count(
           crossAxisCount: 2,
@@ -200,6 +220,11 @@ class _CprScreenState extends State<CprScreen> {
               icon: Icons.vaccines,
               label: 'Amiodaron (${s.amiodaroneCount})',
               onPressed: () => _act(s.recordAmiodarone),
+            ),
+            _ActionButton(
+              icon: Icons.medication_liquid,
+              label: 'Atropin (${s.atropineCount})',
+              onPressed: () => _act(s.recordAtropine),
             ),
             _ActionButton(
               icon: Icons.air,
@@ -223,9 +248,10 @@ class _CprScreenState extends State<CprScreen> {
         ),
         const Divider(),
         Text('Son kayıtlar', style: theme.textTheme.titleSmall),
-        for (final e in s.events.reversed.take(5))
+        for (final e in s.timeline.reversed.take(6))
           ListTile(
             dense: true,
+            textColor: e.confirmed ? null : theme.colorScheme.error,
             leading: Text(
               formatDuration(e.elapsed),
               style: const TextStyle(
@@ -294,10 +320,13 @@ class _StartView extends StatelessWidget {
         const SizedBox(height: 24),
         const Text(
           'Başlattığınızda:\n'
-          '• Her 2 dakikada ritim/nabız kontrolü için sesli uyarı verilir.\n'
-          '• "Adrenalin verildi" dediğinizde 3. dakikada hafif, 5. dakikada '
-          'güçlü uyarı verilir.\n'
-          '• Şok, amiodaron, havayolu ve ROSC tek dokunuşla saatiyle kaydedilir.\n'
+          '• Her 2 dakikada (2., 4., 6. dk...) nabız kontrolü, her 3 dakikada '
+          '(3., 6., 9. dk...) adrenalin için sesli uyarı verilir.\n'
+          '• İşlemi yaptığınızda ilgili butona basın. Planlanan zamandan en '
+          'fazla 30 sn önce veya 60 sn sonra basarsanız kayda planlanan tam '
+          'zaman yazılır. Basılmayan işlemler kayıtta "onaylanmadı" görünür.\n'
+          '• Şok, amiodaron, atropin, havayolu ve ROSC tek dokunuşla saatiyle '
+          'kaydedilir.\n'
           '• CPR süresince ekran kapanmaz.\n'
           '• Sonunda saat saat özet çıkar. Hasta bilgisi istenmez ve '
           'kayıt saklanmaz.',
@@ -309,137 +338,104 @@ class _StartView extends StatelessWidget {
   }
 }
 
-class _CycleCard extends StatelessWidget {
-  const _CycleCard({required this.session, required this.onCheck});
+/// Planlı bir işlemin (nabız kontrolü veya adrenalin) geri sayım kartı.
+class _ScheduleCard extends StatelessWidget {
+  const _ScheduleCard({
+    required this.session,
+    required this.task,
+    required this.icon,
+    required this.count,
+    required this.buttonLabel,
+    required this.onPressed,
+  });
 
   final CprSession session;
-  final VoidCallback onCheck;
+  final ScheduledTask task;
+  final IconData icon;
+  final int count;
+  final String buttonLabel;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final due = session.rhythmCheckDue;
-    // Kontrol zamanı geldiğinde kart yarım saniyede bir yanıp söner.
-    final flash = due && DateTime.now().millisecond < 500;
     final theme = Theme.of(context);
+    final due = session.dueSlot(task);
+    final isDue = due != null;
+    // Zamanı geldiğinde kart yarım saniyede bir yanıp söner.
+    final flash = isDue && DateTime.now().millisecond < 500;
+    final baseColor = task == ScheduledTask.pulseCheck
+        ? Colors.red
+        : Colors.deepOrange;
+    final fg = isDue ? Colors.white : null;
+    final remaining = session.untilNext(task);
     final progress =
-        (session.cycleElapsed.inMilliseconds /
-                CprSession.cycleLength.inMilliseconds)
-            .clamp(0.0, 1.0);
+        1 - remaining.inMilliseconds / task.interval.inMilliseconds;
     return Card(
-      color: due
-          ? (flash ? Colors.red.shade700 : Colors.red.shade400)
+      color: isDue
+          ? (flash ? baseColor.shade700 : baseColor.shade400)
           : theme.colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(
-              due
-                  ? 'RİTİM / NABIZ KONTROLÜ'
-                  : '${session.cycleNumber}. döngü · kontrole kalan',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: due ? Colors.white : null,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              due
-                  ? '+${formatDuration(-session.cycleRemaining)}'
-                  : formatDuration(session.cycleRemaining),
-              style: theme.textTheme.displaySmall?.copyWith(
-                color: due ? Colors.white : null,
-                fontWeight: FontWeight.bold,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: progress, minHeight: 8),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                style: due
-                    ? FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.red.shade800,
-                      )
-                    : null,
-                onPressed: onCheck,
-                icon: const Icon(Icons.monitor_heart),
-                label: const Text('Kontrol yapıldı · ritmi seç'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AdrenalineCard extends StatelessWidget {
-  const _AdrenalineCard({required this.session, required this.onGiven});
-
-  final CprSession session;
-  final VoidCallback onGiven;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final since = session.sinceAdrenaline;
-    final (Color? bg, String status) = switch (session.adrenalineStatus) {
-      AdrenalineStatus.notGiven => (null, 'Henüz verilmedi'),
-      AdrenalineStatus.waiting => (
-        null,
-        '3. dakikaya kalan: ${formatDuration(CprSession.adrenalineMinInterval - since!)}',
-      ),
-      AdrenalineStatus.window => (
-        Colors.amber.shade300,
-        'Doz verilebilir (3–5 dk aralığı)',
-      ),
-      AdrenalineStatus.overdue => (
-        Colors.orange.shade400,
-        'ADRENALİN ZAMANI: 5 dk geçti',
-      ),
-    };
-    final onColor = bg != null ? Colors.black : null;
-    return Card(
-      color: bg ?? theme.colorScheme.surfaceContainerHighest,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
             Row(
               children: [
-                Icon(Icons.vaccines, color: onColor),
+                Icon(icon, color: fg),
                 const SizedBox(width: 8),
-                Text(
-                  'Adrenalin · ${session.adrenalineCount} doz',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: onColor,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    '${task.label} · $count kez',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: fg,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const Spacer(),
-                if (since != null)
-                  Text(
-                    'son: ${formatDuration(since)} önce',
-                    style: TextStyle(color: onColor),
-                  ),
+                Text(
+                  'her ${task.interval.inMinutes} dk',
+                  style: TextStyle(color: fg),
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              status,
-              style: theme.textTheme.titleSmall?.copyWith(color: onColor),
+              isDue
+                  ? 'ŞİMDİ · planlanan: '
+                        '${formatDuration(CprSession.slotTime(task, due))}'
+                  : 'Sonrakine kalan',
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: fg,
+                fontWeight: isDue ? FontWeight.bold : null,
+              ),
             ),
+            if (!isDue)
+              Text(
+                formatDuration(remaining),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            const SizedBox(height: 8),
+            if (!isDue)
+              LinearProgressIndicator(
+                value: progress.clamp(0, 1),
+                minHeight: 6,
+              ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.tonalIcon(
-                onPressed: onGiven,
-                icon: const Icon(Icons.add),
-                label: const Text('Adrenalin verildi (1 mg)'),
+              child: FilledButton.icon(
+                style: isDue
+                    ? FilledButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: baseColor.shade800,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      )
+                    : null,
+                onPressed: onPressed,
+                icon: Icon(icon),
+                label: Text(buttonLabel),
               ),
             ),
           ],
@@ -497,14 +493,17 @@ class _SummaryView extends StatelessWidget {
           'Toplam süre: ${formatDuration(session.elapsed)}',
         ),
         Text(
+          'Nabız kontrolü: ${session.pulseCheckCount} · '
           'Adrenalin: ${session.adrenalineCount} doz · '
           'Şok: ${session.shockCount} · '
-          'Amiodaron: ${session.amiodaroneCount} doz',
+          'Amiodaron: ${session.amiodaroneCount} doz · '
+          'Atropin: ${session.atropineCount} doz',
         ),
         const Divider(height: 24),
-        for (final e in session.events)
+        for (final e in session.timeline)
           ListTile(
             dense: true,
+            textColor: e.confirmed ? null : theme.colorScheme.error,
             contentPadding: EdgeInsets.zero,
             leading: Text(
               formatClock(e.time),
@@ -609,12 +608,19 @@ class _CprInfo extends StatelessWidget {
         '1 mg IV/IO, 3–5 dakikada bir. Şoklanamaz ritimde '
             'mümkün olan en kısa sürede; şoklanabilir ritimde ilk şoklar '
             'başarısız olduktan sonra (AHA: 2. şoktan sonra, ERC: 3. şoktan '
-            'sonra).',
+            'sonra). Zamanlayıcı kılavuz aralığının alt sınırı olan 3 '
+            'dakikada bir hatırlatır.',
       ),
       (
         'Amiodaron',
         'Şoka dirençli VF/nabızsız VT\'de 300 mg IV/IO bolus '
             '(3. şoktan sonra), gerekirse 150 mg (5. şoktan sonra).',
+      ),
+      (
+        'Atropin',
+        'Güncel erişkin kardiyak arrest algoritmalarında rutin olarak '
+            'önerilmez (asistoli/NEA dahil). Bradikardi tedavisinde '
+            'kullanılır. Kayıt butonu ekip liderinin istemi için vardır.',
       ),
       (
         'Kurum protokolü',

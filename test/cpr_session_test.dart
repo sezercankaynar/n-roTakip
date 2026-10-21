@@ -5,91 +5,134 @@ void main() {
   late DateTime now;
   late CprSession s;
 
-  void advance(Duration d) => now = now.add(d);
+  void at(int minutes, [int seconds = 0]) => now = DateTime(
+    2026,
+    1,
+    1,
+    10,
+  ).add(Duration(minutes: minutes, seconds: seconds));
 
   setUp(() {
-    now = DateTime(2026, 1, 1, 10);
+    at(0);
     s = CprSession(clock: () => now);
+    s.start();
   });
 
-  test('2 dakikada ritim kontrolü uyarısı bir kez verilir', () {
-    s.start();
-    advance(const Duration(seconds: 119));
+  List<String> labels() => s.timeline.map((e) => e.label).toList();
+  List<String> times() =>
+      s.timeline.map((e) => formatDuration(e.elapsed)).toList();
+
+  test('nabız kontrolü 2 dakikada, adrenalin 3 dakikada uyarır', () {
+    at(1, 59);
     expect(s.pollAlerts(), isEmpty);
-    expect(s.rhythmCheckDue, isFalse);
-
-    advance(const Duration(seconds: 1));
-    expect(s.pollAlerts(), [CprAlert.rhythmCheckDue]);
+    at(2);
+    expect(s.pollAlerts(), [CprAlert.pulseCheckDue]);
     expect(s.pollAlerts(), isEmpty);
-    expect(s.rhythmCheckDue, isTrue);
+    at(3);
+    expect(s.pollAlerts(), [CprAlert.adrenalineDue]);
+    at(6);
+    expect(s.pollAlerts(), [CprAlert.pulseCheckDue, CprAlert.adrenalineDue]);
   });
 
-  test('kontrol sonrası yeni döngü başlar', () {
-    s.start();
-    advance(const Duration(minutes: 2, seconds: 10));
-    s.pollAlerts();
-    s.recordRhythmCheck(Rhythm.shockable);
-    expect(s.cycleNumber, 2);
-    expect(s.cycleRemaining, CprSession.cycleLength);
-    advance(const Duration(minutes: 2));
-    expect(s.pollAlerts(), [CprAlert.rhythmCheckDue]);
+  test('geç basılan nabız kontrolü planlanan tam zamana yazılır', () {
+    at(2, 7);
+    expect(s.dueSlot(ScheduledTask.pulseCheck), 1);
+    s.recordPulseCheck();
+    expect(s.dueSlot(ScheduledTask.pulseCheck), isNull);
+    final e = s.timeline.last;
+    expect(e.label, 'Nabız kontrolü');
+    expect(e.elapsed, const Duration(minutes: 2));
+    expect(e.time, DateTime(2026, 1, 1, 10, 2));
   });
 
-  test('adrenalin 3. dakikada hafif, 5. dakikada güçlü uyarı', () {
-    s.start();
-    expect(s.adrenalineStatus, AdrenalineStatus.notGiven);
+  test('erken basılan adrenalin planlanan tam zamana yazılır', () {
+    at(2, 40);
     s.recordAdrenaline();
-    advance(const Duration(minutes: 2, seconds: 59));
-    expect(s.adrenalineStatus, AdrenalineStatus.waiting);
-    expect(s.pollAlerts(), [CprAlert.rhythmCheckDue]);
-
-    advance(const Duration(seconds: 1));
-    expect(s.adrenalineStatus, AdrenalineStatus.window);
-    expect(s.pollAlerts(), [CprAlert.adrenalineWindowOpen]);
-
-    advance(const Duration(minutes: 2));
-    expect(s.adrenalineStatus, AdrenalineStatus.overdue);
-    expect(s.pollAlerts(), [CprAlert.adrenalineOverdue]);
-    expect(s.pollAlerts(), isEmpty);
+    expect(s.timeline.last.elapsed, const Duration(minutes: 3));
+    expect(s.timeline.last.label, 'Adrenalin 1 mg (1. doz)');
+    at(3, 10);
+    expect(s.dueSlot(ScheduledTask.adrenaline), isNull);
   });
 
-  test('yeni adrenalin dozu sayacı sıfırlar', () {
-    s.start();
+  test('tolerans dışındaki basış gerçek zamanıyla "ek" olarak kaydedilir', () {
+    at(1);
     s.recordAdrenaline();
-    advance(const Duration(minutes: 4));
-    s.pollAlerts();
+    expect(s.timeline.last.label, 'Adrenalin 1 mg (1. doz) (ek)');
+    expect(s.timeline.last.elapsed, const Duration(minutes: 1));
+    // 3. dakikadaki planlı doz hâlâ beklemede.
+    at(3, 5);
+    expect(s.dueSlot(ScheduledTask.adrenaline), 1);
     s.recordAdrenaline();
-    expect(s.adrenalineCount, 2);
-    expect(s.adrenalineStatus, AdrenalineStatus.waiting);
-    advance(const Duration(minutes: 3));
-    expect(s.pollAlerts(), contains(CprAlert.adrenalineWindowOpen));
+    expect(s.timeline.last.label, 'Adrenalin 1 mg (2. doz)');
+    expect(s.timeline.last.elapsed, const Duration(minutes: 3));
   });
 
-  test('amiodaron dozları 300 mg sonra 150 mg', () {
-    s.start();
-    s.recordAmiodarone();
-    s.recordAmiodarone();
-    final labels = s.events.map((e) => e.label).toList();
-    expect(labels, contains('Amiodaron 300 mg (1. doz)'));
-    expect(labels, contains('Amiodaron 150 mg (2. doz)'));
+  test('aynı planlı zamana ikinci basış ek kayıt olur', () {
+    at(2, 5);
+    s.recordPulseCheck();
+    at(2, 20);
+    s.recordPulseCheck();
+    expect(times().sublist(1), ['02:00', '02:20']);
+    expect(labels().last, 'Nabız kontrolü (ek)');
   });
 
-  test('ROSC sayaçları durdurur ve özet üretir', () {
-    s.start();
-    advance(const Duration(minutes: 1));
-    s.recordShock();
-    advance(const Duration(minutes: 1, seconds: 30));
-    s.recordRhythmCheck(Rhythm.pulse);
+  test('basılmayan planlı işlem süresi dolunca "onaylanmadı" görünür', () {
+    at(2, 59);
+    expect(labels().any((l) => l.contains('onaylanmadı')), isFalse);
+    at(3, 1);
+    // 2:00 nabız kontrolü 60 sn tolerans geçti; 3:00 adrenalin henüz değil.
+    final missed = s.timeline.where((e) => !e.confirmed).toList();
+    expect(missed.map((e) => e.label), ['Nabız kontrolü zamanı (onaylanmadı)']);
+    expect(missed.single.elapsed, const Duration(minutes: 2));
+  });
+
+  test('ritim sonradan eklenir; nabız varsa ROSC ile biter', () {
+    at(2, 3);
+    s.recordPulseCheck();
+    s.setLastPulseRhythm(Rhythm.shockable);
+    expect(labels().last, 'Nabız kontrolü: ${Rhythm.shockable.label}');
+    at(4, 2);
+    s.recordPulseCheck();
+    s.setLastPulseRhythm(Rhythm.pulse);
     expect(s.hasEnded, isTrue);
-    expect(s.elapsed, const Duration(minutes: 2, seconds: 30));
-    advance(const Duration(minutes: 10));
-    expect(s.elapsed, const Duration(minutes: 2, seconds: 30));
+    expect(labels().last, 'ROSC (spontan dolaşımın geri dönüşü)');
+    expect(s.elapsed, const Duration(minutes: 4, seconds: 2));
+  });
+
+  test('atropin ve amiodaron dozları gerçek zamanla kaydedilir', () {
+    at(1, 15);
+    s.recordAtropine();
+    s.recordAmiodarone();
+    s.recordAmiodarone();
+    expect(
+      labels(),
+      containsAll([
+        'Atropin (1. doz)',
+        'Amiodaron 300 mg (1. doz)',
+        'Amiodaron 150 mg (2. doz)',
+      ]),
+    );
+    expect(s.atropineCount, 1);
+    expect(s.timeline.last.elapsed, const Duration(minutes: 1, seconds: 15));
+  });
+
+  test('bitişten sonra kayıt alınmaz ve özet tamdır', () {
+    at(2, 2);
+    s.recordPulseCheck();
+    at(3, 1);
+    s.recordAdrenaline();
+    at(5);
+    s.end();
+    at(9);
+    expect(s.elapsed, const Duration(minutes: 5));
     expect(s.pollAlerts(), isEmpty);
     s.recordShock();
-    expect(s.shockCount, 1);
+    expect(s.shockCount, 0);
+    // 4:00 nabız kontrolü onaylanmadı; bitişten sonraki zamanlar listelenmez.
+    expect(times(), ['00:00', '02:00', '03:00', '04:00', '05:00']);
     final text = s.summaryText();
-    expect(text, contains('Toplam süre: 02:30'));
-    expect(text, contains('ROSC'));
+    expect(text, contains('Toplam süre: 05:00'));
+    expect(text, contains('10:04:00  (+04:00)  Nabız kontrolü zamanı'));
   });
 
   test('süre biçimlendirme', () {
