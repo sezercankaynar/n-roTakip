@@ -320,8 +320,9 @@ class _StartView extends StatelessWidget {
         const SizedBox(height: 24),
         const Text(
           'Başlattığınızda:\n'
-          '• Her 2 dakikada (2., 4., 6. dk...) nabız kontrolü, her 3 dakikada '
-          '(3., 6., 9. dk...) adrenalin için sesli uyarı verilir.\n'
+          '• İlk adrenalin dozu CPR başlangıcında (00:00), sonrakiler 3., 6., '
+          '9. dakikalarda; nabız kontrolü 2., 4., 6. dakikalarda planlanır ve '
+          'zamanı gelince sesli uyarı verilir.\n'
           '• İşlemi yaptığınızda ilgili butona basın. Planlanan zamandan en '
           'fazla 30 sn önce veya 60 sn sonra basarsanız kayda planlanan tam '
           'zaman yazılır. Basılmayan işlemler kayıtta "onaylanmadı" görünür.\n'
@@ -488,17 +489,16 @@ class _SummaryView extends StatelessWidget {
       children: [
         Text('CPR Özeti', style: theme.textTheme.headlineSmall),
         const SizedBox(height: 8),
-        Text(
-          'Başlangıç: ${formatClock(session.startedAt!)} · '
-          'Toplam süre: ${formatDuration(session.elapsed)}',
-        ),
-        Text(
-          'Nabız kontrolü: ${session.pulseCheckCount} · '
-          'Adrenalin: ${session.adrenalineCount} doz · '
-          'Şok: ${session.shockCount} · '
-          'Amiodaron: ${session.amiodaroneCount} doz · '
-          'Atropin: ${session.atropineCount} doz',
-        ),
+        for (final line in session.summaryLines())
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              line,
+              style: line == 'UYGULANAN İLAÇLAR'
+                  ? theme.textTheme.titleSmall
+                  : theme.textTheme.bodyLarge,
+            ),
+          ),
         const Divider(height: 24),
         for (final e in session.timeline)
           ListTile(
@@ -608,8 +608,9 @@ class _CprInfo extends StatelessWidget {
         '1 mg IV/IO, 3–5 dakikada bir. Şoklanamaz ritimde '
             'mümkün olan en kısa sürede; şoklanabilir ritimde ilk şoklar '
             'başarısız olduktan sonra (AHA: 2. şoktan sonra, ERC: 3. şoktan '
-            'sonra). Zamanlayıcı kılavuz aralığının alt sınırı olan 3 '
-            'dakikada bir hatırlatır.',
+            'sonra). Zamanlayıcı ilk dozu başlangıçta, sonrakileri kılavuz '
+            'aralığının alt sınırı olan 3 dakikada bir planlar; ekip liderinin '
+            'istemine göre "ek" doz da kaydedilebilir.',
       ),
       (
         'Amiodaron',

@@ -1,7 +1,7 @@
 /// CPR zamanlayıcısının mantığı. Arayüzden bağımsızdır ve test edilebilir.
 ///
 /// Nabız kontrolü ve adrenalin sabit bir takvime göre planlanır
-/// (2. 4. 6. dakika... ve 3. 6. 9. dakika...). Kullanıcı işlemi yaptığında
+/// (nabız kontrolü 2. 4. 6. dakika...; adrenalin 0. 3. 6. dakika...). Kullanıcı işlemi yaptığında
 /// butona basar; basış planlanan zamana yakınsa kayda saniyeler kaymadan
 /// planlanan tam zaman yazılır. Basılmayan planlı işlemler kayıtta
 /// "onaylanmadı" olarak görünür; böylece yapılmamış bir işlem yapılmış gibi
@@ -35,13 +35,19 @@ enum Rhythm {
 
 /// Takvime bağlı işlemler.
 enum ScheduledTask {
-  pulseCheck(Duration(minutes: 2), 'Nabız kontrolü'),
-  adrenaline(Duration(minutes: 3), 'Adrenalin 1 mg');
+  /// 2., 4., 6. dakika...
+  pulseCheck(Duration(minutes: 2), 'Nabız kontrolü', 1),
 
-  const ScheduledTask(this.interval, this.label);
+  /// İlk doz CPR başlangıcında (00:00), sonra 3., 6., 9. dakika...
+  adrenaline(Duration(minutes: 3), 'Adrenalin 1 mg', 0);
+
+  const ScheduledTask(this.interval, this.label, this.firstIndex);
 
   final Duration interval;
   final String label;
+
+  /// İlk planlı tekrarın sıra numarası (0 = CPR başlangıcı).
+  final int firstIndex;
 }
 
 enum CprAlert { pulseCheckDue, adrenalineDue }
@@ -80,11 +86,11 @@ class CprSession {
   DateTime? _startedAt;
   DateTime? _endedAt;
 
-  // Onaylanan planlı işlemlerin sıra numaraları (1 = ilk planlı zaman).
+  // Onaylanan planlı işlemlerin sıra numaraları (bkz. firstIndex).
   final _confirmed = {for (final t in ScheduledTask.values) t: <int>{}};
 
   // pollAlerts() içinde aynı uyarının tekrar verilmemesi için.
-  final _alerted = {for (final t in ScheduledTask.values) t: 0};
+  final _alerted = {for (final t in ScheduledTask.values) t: t.firstIndex - 1};
 
   bool get hasStarted => _startedAt != null;
   bool get isRunning => _startedAt != null && _endedAt == null;
@@ -112,9 +118,13 @@ class CprSession {
     if (!isRunning) return null;
     final e = elapsed;
     final last = e.inMilliseconds ~/ task.interval.inMilliseconds;
-    if (last < 1) return null;
+    if (last < task.firstIndex) return null;
     final lateStart = e - lateTolerance;
-    for (var k = last; k >= 1 && slotTime(task, k) >= lateStart; k--) {
+    for (
+      var k = last;
+      k >= task.firstIndex && slotTime(task, k) >= lateStart;
+      k--
+    ) {
       if (!_confirmed[task]!.contains(k)) return k;
     }
     return null;
@@ -227,7 +237,7 @@ class CprSession {
     final items = [..._events];
     final e = elapsed;
     for (final task in ScheduledTask.values) {
-      for (var k = 1; slotTime(task, k) <= e; k++) {
+      for (var k = task.firstIndex; slotTime(task, k) <= e; k++) {
         final t = slotTime(task, k);
         final expired = hasEnded || t + lateTolerance < e;
         if (expired && !_confirmed[task]!.contains(k)) {
@@ -253,23 +263,62 @@ class CprSession {
     return items;
   }
 
+  /// 2 dakikalık siklus sayısı ve yarım kalan son siklusun süresi.
+  ({int count, Duration? lastPartial}) get cycles {
+    final cycle = ScheduledTask.pulseCheck.interval;
+    final e = elapsed;
+    final full = e.inMilliseconds ~/ cycle.inMilliseconds;
+    final rest = e - cycle * full;
+    // Saniyenin altındaki artıklar yarım siklus sayılmaz.
+    if (rest < const Duration(seconds: 1)) {
+      return (count: full, lastPartial: null);
+    }
+    return (count: full + 1, lastPartial: rest);
+  }
+
+  /// Planlanıp onaylanmamış (süresi dolmuş) adrenalin dozu sayısı.
+  int get missedAdrenaline => timeline
+      .where((e) => !e.confirmed && e.type == CprEventType.adrenaline)
+      .length;
+
+  int get missedPulseChecks => timeline
+      .where((e) => !e.confirmed && e.type == CprEventType.pulseCheck)
+      .length;
+
+  /// Özetin başlık satırları: süre, siklus ve uygulanan ilaçlar.
+  List<String> summaryLines() {
+    final c = cycles;
+    final amiodaroneMg = switch (amiodaroneCount) {
+      0 => '',
+      1 => ' (300 mg)',
+      2 => ' (300 mg + 150 mg)',
+      _ => ' (300 mg + 150 mg + ${amiodaroneCount - 2} ek doz)',
+    };
+    return [
+      if (_startedAt != null) 'Başlangıç: ${formatClock(_startedAt!)}',
+      'Toplam süre: ${formatDuration(elapsed)}',
+      'Siklus sayısı: ${c.count}'
+          '${c.lastPartial == null ? '' : ' (son siklus ${formatDuration(c.lastPartial!)} sürdü)'}',
+      'Nabız kontrolü: $pulseCheckCount'
+          '${missedPulseChecks > 0 ? ' · onaylanmayan: $missedPulseChecks' : ''}',
+      'Şok: $shockCount',
+      'UYGULANAN İLAÇLAR',
+      '• Adrenalin: $adrenalineCount doz ($adrenalineCount mg)'
+          '${missedAdrenaline > 0 ? ' · onaylanmayan planlı doz: $missedAdrenaline' : ''}',
+      '• Amiodaron: $amiodaroneCount doz$amiodaroneMg',
+      '• Atropin: $atropineCount doz',
+    ];
+  }
+
   /// Hasta dosyasına aktarılabilecek düz metin özet (kişisel veri içermez).
   String summaryText() {
     final b = StringBuffer('CPR ÖZETİ\n');
-    if (_startedAt != null) {
-      b.writeln('Başlangıç: ${formatClock(_startedAt!)}');
-      b.writeln('Toplam süre: ${formatDuration(elapsed)}');
-    }
-    b.writeln(
-      'Nabız kontrolü: $pulseCheckCount · Adrenalin: $adrenalineCount '
-      'doz · Şok: $shockCount · Amiodaron: $amiodaroneCount doz · '
-      'Atropin: $atropineCount doz',
-    );
+    summaryLines().forEach(b.writeln);
     b.writeln();
+    b.writeln('ZAMAN ÇİZELGESİ');
     for (final e in timeline) {
       b.writeln(
-        '${formatClock(e.time)}  (+${formatDuration(e.elapsed)})  '
-        '${e.label}',
+        '${formatClock(e.time)}  (+${formatDuration(e.elapsed)})  ${e.label}',
       );
     }
     return b.toString();
@@ -294,7 +343,11 @@ class CprSession {
     final ms = task.interval.inMilliseconds;
     final from = ((e - lateTolerance).inMilliseconds / ms).ceil();
     final to = ((e + earlyTolerance).inMilliseconds / ms).floor();
-    for (var k = from < 1 ? 1 : from; k <= to; k++) {
+    for (
+      var k = from < task.firstIndex ? task.firstIndex : from;
+      k <= to;
+      k++
+    ) {
       if (_confirmed[task]!.contains(k)) continue;
       final diff = (slotTime(task, k) - e).abs();
       if (bestDiff == null || diff < bestDiff) {

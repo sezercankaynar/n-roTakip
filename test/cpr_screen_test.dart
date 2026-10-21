@@ -33,7 +33,8 @@ void main() {
     await tester.tap(find.text('ROSC'));
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('CPR Özeti'), findsOneWidget);
-    expect(find.textContaining('Atropin: 1 doz'), findsOneWidget);
+    expect(find.text('• Atropin: 1 doz'), findsOneWidget);
+    expect(find.textContaining('Siklus sayısı'), findsOneWidget);
   });
 
   testWidgets('telefon ekranında taşma olmadan çizilir', (tester) async {

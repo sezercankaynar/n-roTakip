@@ -22,7 +22,9 @@ void main() {
   List<String> times() =>
       s.timeline.map((e) => formatDuration(e.elapsed)).toList();
 
-  test('nabız kontrolü 2 dakikada, adrenalin 3 dakikada uyarır', () {
+  test('adrenalin başlangıçta ve 3 dakikada, nabız 2 dakikada uyarır', () {
+    expect(s.pollAlerts(), [CprAlert.adrenalineDue]);
+    expect(s.dueSlot(ScheduledTask.adrenaline), 0);
     at(1, 59);
     expect(s.pollAlerts(), isEmpty);
     at(2);
@@ -55,10 +57,16 @@ void main() {
   });
 
   test('tolerans dışındaki basış gerçek zamanıyla "ek" olarak kaydedilir', () {
-    at(1);
+    at(1, 30);
     s.recordAdrenaline();
-    expect(s.timeline.last.label, 'Adrenalin 1 mg (1. doz) (ek)');
-    expect(s.timeline.last.elapsed, const Duration(minutes: 1));
+    expect(
+      s.timeline.where((e) => e.confirmed).last.label,
+      'Adrenalin 1 mg (1. doz) (ek)',
+    );
+    expect(
+      s.timeline.where((e) => e.confirmed).last.elapsed,
+      const Duration(minutes: 1, seconds: 30),
+    );
     // 3. dakikadaki planlı doz hâlâ beklemede.
     at(3, 5);
     expect(s.dueSlot(ScheduledTask.adrenaline), 1);
@@ -72,11 +80,15 @@ void main() {
     s.recordPulseCheck();
     at(2, 20);
     s.recordPulseCheck();
-    expect(times().sublist(1), ['02:00', '02:20']);
+    final pulses = s.timeline
+        .where((e) => e.type == CprEventType.pulseCheck)
+        .map((e) => formatDuration(e.elapsed));
+    expect(pulses, ['02:00', '02:20']);
     expect(labels().last, 'Nabız kontrolü (ek)');
   });
 
   test('basılmayan planlı işlem süresi dolunca "onaylanmadı" görünür', () {
+    s.recordAdrenaline(); // 00:00 dozu
     at(2, 59);
     expect(labels().any((l) => l.contains('onaylanmadı')), isFalse);
     at(3, 1);
@@ -117,6 +129,8 @@ void main() {
   });
 
   test('bitişten sonra kayıt alınmaz ve özet tamdır', () {
+    at(0, 4);
+    s.recordAdrenaline();
     at(2, 2);
     s.recordPulseCheck();
     at(3, 1);
@@ -129,9 +143,13 @@ void main() {
     s.recordShock();
     expect(s.shockCount, 0);
     // 4:00 nabız kontrolü onaylanmadı; bitişten sonraki zamanlar listelenmez.
-    expect(times(), ['00:00', '02:00', '03:00', '04:00', '05:00']);
+    expect(times(), ['00:00', '00:00', '02:00', '03:00', '04:00', '05:00']);
     final text = s.summaryText();
     expect(text, contains('Toplam süre: 05:00'));
+    expect(text, contains('Siklus sayısı: 3 (son siklus 01:00 sürdü)'));
+    expect(text, contains('Nabız kontrolü: 1 · onaylanmayan: 1'));
+    expect(text, contains('• Adrenalin: 2 doz (2 mg)\n'));
+    expect(text, contains('10:00:00  (+00:00)  Adrenalin 1 mg (1. doz)'));
     expect(text, contains('10:04:00  (+04:00)  Nabız kontrolü zamanı'));
   });
 
@@ -139,5 +157,33 @@ void main() {
     expect(formatDuration(const Duration(seconds: 75)), '01:15');
     expect(formatDuration(const Duration(hours: 1, seconds: 3)), '1:00:03');
     expect(formatDuration(const Duration(seconds: -5)), '-00:05');
+  });
+
+  test('ilk adrenalin dozu 00:00 olarak kaydedilir', () {
+    at(0, 25);
+    s.recordAdrenaline();
+    expect(s.timeline.last.elapsed, Duration.zero);
+    expect(s.timeline.last.label, 'Adrenalin 1 mg (1. doz)');
+    expect(
+      s.untilNext(ScheduledTask.adrenaline),
+      const Duration(minutes: 2, seconds: 35),
+    );
+  });
+
+  test('basılmayan ilk doz özetde onaylanmayan olarak sayılır', () {
+    at(4);
+    s.recordAdrenaline(); // 3:00 dozu
+    s.recordAmiodarone();
+    s.recordAmiodarone();
+    s.recordAtropine();
+    s.end();
+    final lines = s.summaryLines();
+    expect(lines, contains('Siklus sayısı: 2'));
+    expect(
+      lines,
+      contains('• Adrenalin: 1 doz (1 mg) · onaylanmayan planlı doz: 1'),
+    );
+    expect(lines, contains('• Amiodaron: 2 doz (300 mg + 150 mg)'));
+    expect(lines, contains('• Atropin: 1 doz'));
   });
 }

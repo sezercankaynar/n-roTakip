@@ -14,7 +14,7 @@ Nöroloji servisi, nöroloji yoğun bakım ve inme ünitesinde çalışan hemşi
 **Yeni sürüm çıktığında** aynı bağlantıdan tekrar indirip kurmanız yeterli. Eski sürüm silinmeden güncellenir.
 
 ## Sürüm 0.1'de neler var?
-- **CPR Zamanlayıcı:** toplam süre; sabit takvimle her 2 dakikada nabız kontrolü ve her 3 dakikada adrenalin uyarısı (butona planlanan zamandan en fazla 30 sn önce veya 60 sn sonra basılırsa kayda tam planlanan zaman yazılır, basılmayanlar "onaylanmadı" görünür); şok, amiodaron, atropin, havayolu ve ROSC kaydı; 110/dk metronom; 4H4T listesi; saat saat özet
+- **CPR Zamanlayıcı:** toplam süre; sabit takvimle her 2 dakikada nabız kontrolü, ilk dozu 00:00 olmak üzere her 3 dakikada adrenalin uyarısı (butona planlanan zamandan en fazla 30 sn önce veya 60 sn sonra basılırsa kayda tam planlanan zaman yazılır, basılmayanlar "onaylanmadı" görünür); şok, amiodaron, atropin, havayolu ve ROSC kaydı; 110/dk metronom; 4H4T listesi; siklus sayısı ve uygulanan ilaç dozlarını içeren saat saat özet
 - **NIHSS Hesaplayıcı:** 15 madde, açıklamalar, otomatik toplam ve şiddet sınıflaması
 - Açılış uyarısı, açık/koyu tema
 
