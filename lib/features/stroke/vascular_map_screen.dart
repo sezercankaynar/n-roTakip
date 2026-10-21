@@ -185,6 +185,7 @@ class _MapScaffold extends StatelessWidget {
     required this.legend,
     this.legendColors = true,
     this.extra,
+    required this.orientationNote,
   });
 
   final String hint;
@@ -192,6 +193,9 @@ class _MapScaffold extends StatelessWidget {
   final CustomPainter painter;
   final ValueChanged<Offset> onTapLogical;
   final List<Vessel> legend;
+
+  /// Bakış yönünü anlatan kısa açıklama.
+  final String orientationNote;
 
   /// Açıklama düğmelerinde renk noktası gösterilsin mi.
   final bool legendColors;
@@ -248,8 +252,7 @@ class _MapScaffold extends StatelessWidget {
         Center(child: Text('ARKA (ense)', style: small)),
         const SizedBox(height: 4),
         Text(
-          'BT görüntüsündeki gibi: ekranın solu hastanın sağıdır. Çizimler '
-          'şematiktir.',
+          '$orientationNote Çizimler şematiktir.',
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall,
         ),
@@ -293,6 +296,9 @@ class _AxialTabState extends State<_AxialTab> {
           'Bir bölgeye dokunun: o damar tıkanırsa görülecek belirtiler '
           'açılır.',
       size: axialSize,
+      orientationNote:
+          'BT kesiti gibi, hastaya ayak ucundan bakılıyor: ekranın solu '
+          'hastanın sağıdır.',
       painter: _AxialPainter(_map, _selected, showRegions: _showRegions),
       extra: SwitchListTile(
         dense: true,
@@ -413,6 +419,8 @@ class _AxialPainter extends CustomPainter {
     // Ventriküller (BOS) bölgelerin üstünde: renklenmez.
     canvas.drawPath(a.ventricles, Paint()..color = const Color(0xFF1E1E1E));
 
+    _drawOrientation(canvas, axialSize);
+
     if (showRegions) {
       for (final r in map.regions) {
         if (r.labelAt != null) {
@@ -445,8 +453,11 @@ class _WillisTabState extends State<_WillisTab> {
   @override
   Widget build(BuildContext context) {
     return _MapScaffold(
-      hint: 'Bir damara dokunun. Beynin alttan görünümü, ön taraf yukarıda.',
+      hint: 'Bir damara dokunun.',
       size: willisSize,
+      orientationNote:
+          'Beyin tabanına alttan bakılıyor, ön taraf yukarıda: ekranın solu '
+          'hastanın sağıdır.',
       painter: _WillisPainter(_map, _selected),
       legendColors: false,
       legend: const [
@@ -577,6 +588,7 @@ class _WillisPainter extends CustomPainter {
     for (final l in map.labels) {
       _drawLabel(canvas, l.text, l.at, 9.5);
     }
+    _drawOrientation(canvas, willisSize);
   }
 
   @override
@@ -604,4 +616,27 @@ void _drawLabel(Canvas canvas, String text, Offset at, double size) {
     textDirection: TextDirection.ltr,
   )..layout();
   tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));
+}
+
+/// BT görüntülerindeki gibi köşelerde taraf işaretleri.
+void _drawOrientation(Canvas canvas, Size size) {
+  void mark(String text, Offset at) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          color: Color(0xFFFFD54F),
+          fontFamily: 'Roboto',
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          shadows: [Shadow(blurRadius: 2, color: Colors.black)],
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, at - Offset(tp.width / 2, 0));
+  }
+
+  mark('SAĞ', const Offset(16, 4));
+  mark('SOL', Offset(size.width - 16, 4));
 }
