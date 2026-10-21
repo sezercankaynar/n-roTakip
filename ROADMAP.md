@@ -320,4 +320,4 @@ Her hastalık veya ilaç kartı şu yolu izler:
 - [x] Tedavi kaydı → ünitede kullanılan isimsiz tedavi şemaları (Modül 7)
 - [x] Ek bölümler → hemşirelik tanıları, düşme ve bası yarası ölçekleri, acil durum kodları, JCI (Modül 8)
 - [x] İçerik kontrolü → kendi bilgimle teyit edeceğim; hekim kontrolü isteğe bağlı
-- [ ] Uygulamanın adı: şimdilik **NöroCep** (öneriler: NöroCep, NöroRehber, NöroKılavuz, NöroAsist)
+- [x] Uygulamanın adı: **NöroCep** (şimdilik; ileride değiştirilebilir)
