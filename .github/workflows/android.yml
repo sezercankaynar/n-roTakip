@@ -1,0 +1,59 @@
+name: Android APK
+
+on:
+  push:
+    branches: [claude/peaceful-gates-yhij2y, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      - name: APK oluştur
+        run: flutter build apk --release --build-number=${{ github.run_number }}
+
+      - name: Sürüm adını belirle
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          echo "tag=v${VERSION}-build${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          cp build/app/outputs/flutter-apk/app-release.apk NoroCep.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NoroCep-apk
+          path: NoroCep.apk
+
+      - name: GitHub Releases'a yükle
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: NöroCep ${{ steps.version.outputs.tag }}
+          body: |
+            Telefona kurmak için aşağıdaki **NoroCep.apk** dosyasını indirin.
+            Kurulum adımları: README.md
+          files: NoroCep.apk
+          make_latest: true
