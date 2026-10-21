@@ -63,4 +63,4 @@ Kanama olursa: giriş yerinin hemen üstüne el ile bası uygulanır ve hekime h
 - Kan şekeri 140–180 mg/dL, ateş > 38 °C ise bildirilir
 - Düşme ve aspirasyon önlemleri
 
-İleride bu bölüme izlem saatlerini hatırlatan bir **takip zamanlayıcısı** eklenecektir.
+İzlem saatlerini hatırlatmak için: **İzlem Takip Zamanlayıcısı** (İnme Merkezi → İzlem).

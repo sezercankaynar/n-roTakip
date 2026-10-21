@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../content/content_screen.dart';
+import '../followup/follow_up_screen.dart';
 import 'thrombolysis_checklist.dart';
 import 'thrombolytic_dose_screen.dart';
 import 'vascular_map_screen.dart';
 
 class _Entry {
-  const _Entry(this.title, this.icon, {this.asset, this.screen, this.soon});
+  const _Entry(this.title, this.icon, {this.asset, this.screen});
 
   final String title;
   final IconData icon;
@@ -14,9 +15,6 @@ class _Entry {
   /// `assets/content/inme/` altındaki dosya adı.
   final String? asset;
   final WidgetBuilder? screen;
-
-  /// Henüz yapılmadıysa hangi sürümde geleceği.
-  final String? soon;
 }
 
 const _sections = <(String, List<_Entry>)>[
@@ -77,13 +75,7 @@ const _sections = <(String, List<_Entry>)>[
         Icons.monitor_heart,
         asset: 'tedavi-sonrasi-izlem.md',
       ),
-    ],
-  ),
-  (
-    'Hazırlanıyor',
-    [
-      _Entry('Trombektomi: adım adım görsel', Icons.animation, soon: '0.2.2'),
-      _Entry('İzlem Takip Zamanlayıcısı', Icons.alarm, soon: '0.2.2'),
+      _Entry('İzlem Takip Zamanlayıcısı', Icons.alarm, screen: _followUp),
     ],
   ),
 ];
@@ -93,6 +85,8 @@ Widget _checklist(BuildContext _) => const ThrombolysisChecklistScreen();
 Widget _vascularMap(BuildContext _) => const VascularMapScreen();
 
 Widget _doseCalculator(BuildContext _) => const ThrombolyticDoseScreen();
+
+Widget _followUp(BuildContext _) => const FollowUpListScreen();
 
 class StrokeCenterScreen extends StatelessWidget {
   const StrokeCenterScreen({super.key});
@@ -117,15 +111,9 @@ class StrokeCenterScreen extends StatelessWidget {
             ),
             for (final e in entries)
               ListTile(
-                enabled: e.soon == null,
                 leading: Icon(e.icon),
                 title: Text(e.title),
-                subtitle: e.soon == null
-                    ? null
-                    : Text('Sürüm ${e.soon} ile gelecek'),
-                trailing: e.soon == null
-                    ? const Icon(Icons.chevron_right)
-                    : null,
+                trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:

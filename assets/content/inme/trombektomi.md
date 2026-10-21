@@ -40,8 +40,6 @@ Karar, görüntüleme ve klinik bulgulara göre hekimler tarafından verilir.
 5. **Kontrol anjiyografisi:** kan akımının geri dönüp dönmediğine bakılır. Başarı **TICI** ölçeğiyle derecelendirilir; TICI 2b–3 başarılı kabul edilir.
 6. **Damar girişinin kapatılması:** kapama cihazı, bası veya radial bant.
 
-İşlemin adım adım görsel anlatımı ileride bu bölüme eklenecektir.
-
 ## Hemşirenin görevleri
 
 **İşlem öncesi**

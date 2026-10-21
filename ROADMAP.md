@@ -242,10 +242,10 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] İçerik altyapısı: kaynak, onay durumu, son kontrol tarihi
 - [x] İnme tipleri içeriği (taslak; senin onayın bekleniyor)
 - [x] Etkileşimli beyin damar haritası (beyin kesiti ve Willis poligonu)
-- [ ] Trombektomi adım adım görsel anlatımı
+- [x] ~~Trombektomi adım adım görsel anlatımı~~ (ürün sahibinin kararıyla çıkarıldı)
 - [x] Trombolitik tedavi kontrol listesi
 - [x] Post-op ve post-tedavi takip çizelgesi
-- [ ] Takip zamanlayıcısı (bildirimli)
+- [x] İzlem takip zamanlayıcısı (bildirimli, birden fazla yatak)
 - [x] Trombolitik tedavi ve mekanik trombektomi metinleri
 - ✅ **Senin işin:** İnme içeriklerini okuyup düzeltmeleri bana yazmak
 
