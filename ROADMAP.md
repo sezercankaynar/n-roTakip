@@ -251,7 +251,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 
 ### Sürüm 0.3: "İlaçlar ve Muayene" (sonraki 2–3 hafta)
 - [x] İlaç rehberi: 74 ilaç (taslak; hemşire onayı bekleniyor), kategori süzme ve arama
-- [ ] Nörolojik muayene rehberi ve görselleri
+- [x] Nörolojik muayene rehberi (10 sayfa), GKS, mRS, pupil cetveli
 - [ ] Arama ve favoriler
 - ✅ **Senin işin:** İlaç bilgilerini kendi ünitendeki uygulamayla karşılaştırmak
 
@@ -275,7 +275,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 
 ### Sonraki adımlar (1.0 sonrası)
 - [ ] Google Play'de yayın (yaklaşık 25 $)
-- [ ] Ek ölçekler: GKS, mRS, ICH, Hunt-Hess, FOUR
+- [ ] Ek ölçekler: ICH, Hunt-Hess, FOUR (GKS ve mRS 0.4'te eklendi)
 - [x] tPA/tenekteplaz doz hesaplayıcı (ürün sahibinin isteğiyle 0.2.2'de eklendi; iki kişi kontrolü uyarısıyla)
 - [ ] Diğer etkileşimli doz hesaplayıcıları
 - [ ] **Uygulama güncellenmeden içerik güncelleme:** içerik internetten ücretsiz olarak indirilir, internet yoksa en son indirilen sürüm kullanılır

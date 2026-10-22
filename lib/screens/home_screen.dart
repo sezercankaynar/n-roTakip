@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
 import '../features/drugs/drug_guide_screen.dart';
+import '../features/exam/exam_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
 import 'coming_soon_screen.dart';
@@ -40,7 +41,7 @@ final _modules = <_Module>[
     'Nörolojik Muayene',
     Icons.accessibility_new,
     const Color(0xFF3949AB),
-    (_) => const ComingSoonScreen(title: 'Nörolojik Muayene', version: '0.3'),
+    (_) => const ExamScreen(),
   ),
   _Module(
     'Hastalıklar',
