@@ -6,9 +6,9 @@ import '../features/diseases/disease_library_screen.dart';
 import '../features/drugs/drug_guide_screen.dart';
 import '../features/exam/exam_screen.dart';
 import '../features/nursing/nursing_screen.dart';
+import '../features/protocols/protocols_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
-import 'coming_soon_screen.dart';
 import 'scales_screen.dart';
 
 class _Module {
@@ -67,7 +67,7 @@ final _modules = <_Module>[
     'Ünite Protokolleri',
     Icons.edit_note,
     const Color(0xFF546E7A),
-    (_) => const ComingSoonScreen(title: 'Ünite Protokolleri', version: '0.4'),
+    (_) => const ProtocolsScreen(),
   ),
 ];
 

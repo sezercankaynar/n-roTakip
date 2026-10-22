@@ -257,7 +257,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 
 ### Sürüm 0.4: "Hastalık Kütüphanesi" (sonraki 3–4 hafta)
 - [x] Hastalık kütüphanesi: 15 hastalık (inme sayfalarıyla ortak), gruplu liste ve arama
-- [ ] Ünite Protokollerim bölümü
+- [x] Ünite Protokollerim bölümü (0.7.0'da eklendi)
 - ✅ **Senin işin:** İçerik onayı
 
 ### Sürüm 0.5: "Hemşirelik ve Hasta Güvenliği" (sonraki 2–3 hafta)
@@ -272,6 +272,13 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] Bası yarası ekranı: altı evrenin deri kesiti çizimleri, pozisyonlara göre risk bölgeleri, ayrıntılı önleme ve tedavi (SSKIN, beslenme, evreye göre bakım)
 - [x] Yeni bakım rehberleri: ağrı değerlendirmesi, inmede pozisyon, NG sonda ve enteral beslenme, idrar sondası (CAUTI), ağız bakımı, DVT önlemleri, fiziksel kısıtlama
 - [x] Hasta güvenliği: güvenli ilaç uygulama, izolasyon önlemleri, SBAR örnekleri, JCI/SKS denetim soruları ve örnek cevaplar
+
+### Sürüm 0.7: "Ünite Protokollerim"
+- [x] Kendi protokollerini yazma, düzenleme, silme; yalnızca telefonda saklanır
+- [x] Hazır şablonlar: akış şeması, ilaç hazırlama, tedavi şeması, kontrol listesi
+- [x] Arama ve türe göre süzme; biçimli önizleme
+- [x] Mesajla paylaşma ve arkadaşın gönderdiği metni içe aktarma
+- [x] Kişisel veri uyarısı (T.C. kimlik no, telefon, hasta adı kalıpları)
 
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
