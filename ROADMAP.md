@@ -256,7 +256,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - ✅ **Senin işin:** İlaç bilgilerini kendi ünitendeki uygulamayla karşılaştırmak
 
 ### Sürüm 0.4: "Hastalık Kütüphanesi" (sonraki 3–4 hafta)
-- [ ] 14 hastalığın içeriği (öncelik sırasıyla, parça parça)
+- [x] Hastalık kütüphanesi: 15 hastalık (inme sayfalarıyla ortak), gruplu liste ve arama
 - [ ] Ünite Protokollerim bölümü
 - ✅ **Senin işin:** İçerik onayı
 

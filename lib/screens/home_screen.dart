@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
+import '../features/diseases/disease_library_screen.dart';
 import '../features/drugs/drug_guide_screen.dart';
 import '../features/exam/exam_screen.dart';
 import '../features/nursing/nursing_screen.dart';
@@ -48,7 +49,7 @@ final _modules = <_Module>[
     'Hastalıklar',
     Icons.menu_book,
     const Color(0xFF6D4C41),
-    (_) => const ComingSoonScreen(title: 'Hastalıklar', version: '0.4'),
+    (_) => const DiseaseLibraryScreen(),
   ),
   _Module(
     'İlaç Rehberi',

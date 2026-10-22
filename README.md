@@ -14,6 +14,7 @@ Nöroloji servisi, nöroloji yoğun bakım ve inme ünitesinde çalışan hemşi
 **Yeni sürüm çıktığında** aynı bağlantıdan tekrar indirip kurmanız yeterli. Eski sürüm silinmeden güncellenir.
 
 ## Neler var?
+- **Hastalık Kütüphanesi (0.6):** 15 hastalık (iskemik inme, ICH, SAK, TİA, SVST, epilepsi ve status epileptikus, kafa içi basınç artışı, miyastenia gravis, GBS, ALS, MS, menenjit/ensefalit, Parkinson, demans/deliryum, baş ağrıları); gruplu liste ve arama
 - **Hemşirelik ve Hasta Güvenliği (0.5):** 9 hemşirelik tanısı; Morse düşme ve Norton bası yarası hesaplayıcıları; yatak başı yutma taraması, bası yarası evreleri, düşme önlemleri; düzenlenebilir acil kodlar; JCI/SKS hasta güvenliği hedefleri ve SBAR
 - **Nörolojik Muayene (0.4):** hızlı nörolojik kontrol kartı; bilinç ve GKS, pupil, kraniyal sinirler, motor muayene (MRC 0–5), duyu, refleksler ve Babinski, serebellar testler, meningeal bulgular, konuşma ve dil; GKS hesaplayıcı (entübe hastada VT), mRS, mm ölçekli pupil cetveli
 - **İlaç Rehberi (0.3):** 74 ilaç (transdermal bantlar, dopamin, dobutamin, ketamin dahil; nöroloji ilaçlarının yanında antibiyotik/antiviral, analjezik, antiemetik, antihistaminik, steroid, albumin ve IV sıvılar, elektrolitler, kan ve kan ürünleri transfüzyonu, sedasyon, vazopressör, insülin, levodopa, antidotlar); etki, endikasyon, doz, hazırlama, veriliş, yan etkiler, izlem, hemşirelik uyarıları ve antidot; kategori düğmeleriyle süzme, ilaç/ticari ad/grup araması

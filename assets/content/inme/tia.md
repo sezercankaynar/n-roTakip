@@ -13,6 +13,13 @@ Beyin, omurilik veya retinada geçici kan akımı azalmasına bağlı, **görün
 
 > TİA "geçti, önemli değil" değildir. Sonraki günlerde inme riski yüksektir; özellikle ilk 48 saatte. Belirtiler sürerken hasta inme gibi değerlendirilir.
 
+## Belirtiler
+İnmeyle aynı belirtiler **aniden başlar ve kendiliğinden düzelir:**
+- Yüz, kol veya bacakta tek taraflı güçsüzlük ya da uyuşma
+- Konuşma bozukluğu, söyleneni anlamama
+- **Amarozis fugaks:** tek gözde perde inmesi gibi geçici görme kaybı (karotis kaynaklı)
+- Denge kaybı, çift görme, baş dönmesi (arka dolaşım)
+
 ## Erken inme riski: ABCD² skoru
 
 | Ölçüt | Puan |
@@ -42,3 +49,8 @@ Toplam 0–7. **4 ve üzeri** yüksek risk kabul edilir. Skor tek başına karar
 - Belirtiler geri gelirse **hemen 112'nin aranması** gerektiğinin anlatılması (BE-FAST)
 - İlaç uyumunun önemi, kanama belirtileri
 - Yaşam tarzı değişiklikleri: sigarayı bırakma, tuz azaltma, egzersiz, kilo kontrolü
+
+## Komplikasyonlar
+- **İnme:** özellikle ilk günlerde, en çok ilk 48 saatte
+- Tekrarlayan TİA'lar (artan sıklık acil değerlendirme gerektirir)
+- İkili antiplatelet ve antikoagülan tedaviye bağlı kanama
