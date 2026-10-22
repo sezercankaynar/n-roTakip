@@ -22,10 +22,10 @@ void main() {
     await tester.tap(button);
     await tester.pumpAndSettle();
 
-    expect(find.text('CPR Zamanlayıcı'), findsOneWidget);
+    expect(find.text('CPR'), findsOneWidget);
     expect(find.text('Ölçekler'), findsOneWidget);
-    expect(find.text('EKG ve Resüsitasyon'), findsOneWidget);
-    expect(find.text('İnfüzyon Hesaplayıcı'), findsOneWidget);
+    expect(find.text('EKG'), findsOneWidget);
+    expect(find.text('İnfüzyon'), findsOneWidget);
     expect(find.text('Vardiyam'), findsOneWidget); // yalnız alt menüde
     expect(find.text('Favoriler'), findsOneWidget);
     expect(settings.disclaimerAccepted, isTrue);
@@ -61,8 +61,8 @@ void main() {
     await tester.pumpWidget(NoroCepApp(settings: settings));
     await tester.pumpAndSettle();
 
-    expect(find.text('ACİL'), findsOneWidget);
-    expect(find.text('BİLGİ'), findsOneWidget);
+    expect(find.text('Hızlı erişim'), findsOneWidget);
+    expect(find.text('Rehberler'), findsOneWidget);
 
     await tester.tap(find.text('Favoriler'));
     await tester.pumpAndSettle();

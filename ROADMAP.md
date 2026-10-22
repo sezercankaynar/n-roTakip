@@ -300,6 +300,11 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] Ayarlar: yazı boyutu (Normal, Büyük, Çok büyük) ve tema
 - [x] Yeni uygulama simgesi ve açılış ekranı (tool/gen_icon.py ile üretilir)
 
+### Sürüm 0.11: "Sade ve profesyonel"
+- [x] Inter yazı tipi (uygulamaya gömülü, internet gerekmez)
+- [x] Ana sayfa iki bölüm: Hızlı erişim (CPR, EKG, İnfüzyon, Ölçekler) ve Rehberler; Kişisel kısayollar
+- [x] Daha az renk: yalnızca acil (CPR) kartı bordo, diğerleri beyaz kart; yuvarlak simgeler
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması

@@ -47,6 +47,7 @@ ThemeData buildTheme(Brightness brightness) {
   final radius = BorderRadius.circular(16);
   return ThemeData(
     useMaterial3: true,
+    fontFamily: 'Inter',
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
     appBarTheme: AppBarTheme(
@@ -54,14 +55,16 @@ ThemeData buildTheme(Brightness brightness) {
       foregroundColor: scheme.onSurface,
       scrolledUnderElevation: 2,
       titleTextStyle: TextStyle(
-        fontSize: 21,
+        fontFamily: 'Inter',
+        fontSize: 20,
         fontWeight: FontWeight.w600,
+        letterSpacing: -0.2,
         color: scheme.onSurface,
       ),
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: scheme.surfaceContainerLow,
+      color: scheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),

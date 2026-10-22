@@ -79,25 +79,28 @@ class _RootShellState extends State<RootShell> {
         destinations: [
           const NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            selectedIcon: Icon(Icons.home_rounded),
             label: 'Ana sayfa',
           ),
-          const NavigationDestination(icon: Icon(Icons.search), label: 'Ara'),
           const NavigationDestination(
-            icon: Icon(Icons.star_border),
-            selectedIcon: Icon(Icons.star),
+            icon: Icon(Icons.search_rounded),
+            label: 'Ara',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.star_outline_rounded),
+            selectedIcon: Icon(Icons.star_rounded),
             label: 'Favoriler',
           ),
           NavigationDestination(
             icon: Badge.count(
               count: _late,
               isLabelVisible: _late > 0,
-              child: const Icon(Icons.today_outlined),
+              child: const Icon(Icons.event_note_outlined),
             ),
             selectedIcon: Badge.count(
               count: _late,
               isLabelVisible: _late > 0,
-              child: const Icon(Icons.today),
+              child: const Icon(Icons.event_note_rounded),
             ),
             label: 'Vardiyam',
           ),
