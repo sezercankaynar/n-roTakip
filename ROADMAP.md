@@ -250,7 +250,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - ✅ **Senin işin:** İnme içeriklerini okuyup düzeltmeleri bana yazmak
 
 ### Sürüm 0.3: "İlaçlar ve Muayene" (sonraki 2–3 hafta)
-- [ ] İlaç rehberi: yukarıdaki listenin tamamı
+- [x] İlaç rehberi: 28 ilaç (taslak; hemşire onayı bekleniyor), kategori ve arama
 - [ ] Nörolojik muayene rehberi ve görselleri
 - [ ] Arama ve favoriler
 - ✅ **Senin işin:** İlaç bilgilerini kendi ünitendeki uygulamayla karşılaştırmak

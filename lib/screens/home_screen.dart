@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
+import '../features/drugs/drug_guide_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
 import 'coming_soon_screen.dart';
@@ -51,7 +52,7 @@ final _modules = <_Module>[
     'İlaç Rehberi',
     Icons.medication,
     const Color(0xFF2E7D32),
-    (_) => const ComingSoonScreen(title: 'İlaç Rehberi', version: '0.3'),
+    (_) => const DrugGuideScreen(),
   ),
   _Module(
     'Hemşirelik',

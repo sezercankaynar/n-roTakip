@@ -12,6 +12,8 @@ import '../widgets/content_status.dart';
 /// title: İskemik İnme
 /// status: draft            # draft | nurse | physician
 /// last_reviewed: 2026-10-21  # isteğe bağlı
+/// category: Antiepileptik  # isteğe bağlı
+/// aliases: Keppra, LEV      # isteğe bağlı
 /// sources:
 ///   - Kaynak 1
 ///   - Kaynak 2
@@ -26,9 +28,17 @@ class ContentPage {
     required this.sources,
     required this.body,
     this.lastReviewed,
+    this.category,
+    this.aliases = const [],
   });
 
   final String title;
+
+  /// İsteğe bağlı grup adı (ör. ilaç rehberinde "Antiepileptik").
+  final String? category;
+
+  /// Aramada da eşleşen diğer adlar (ör. ticari adlar), virgülle ayrılmış.
+  final List<String> aliases;
   final ReviewStatus status;
   final List<String> sources;
   final String? lastReviewed;
@@ -84,6 +94,11 @@ class ContentPage {
       status: status,
       sources: sources,
       lastReviewed: reviewed == null || reviewed.isEmpty ? null : reviewed,
+      category: meta['category'],
+      aliases: [
+        for (final a in (meta['aliases'] ?? '').split(','))
+          if (a.trim().isNotEmpty) a.trim(),
+      ],
       body: lines.sublist(end + 1).join('\n').trim(),
     );
   }
