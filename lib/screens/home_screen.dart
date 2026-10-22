@@ -9,9 +9,6 @@ import '../features/infusion/infusion_screen.dart';
 import '../features/nursing/emergency_codes_screen.dart';
 import '../features/nursing/nursing_screen.dart';
 import '../features/protocols/protocols_screen.dart';
-import '../features/search/search_screen.dart';
-import '../features/shift/shift.dart';
-import '../features/shift/shift_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
 import 'scales_screen.dart';
@@ -106,10 +103,7 @@ final _mine = <_Module>[
 ];
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, this.refresh = 0});
-
-  /// Değişince vardiya kartı yeniden yüklenir (sekmeye dönüşte).
-  final int refresh;
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +136,6 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          const HomeSearchBar(),
-          ShiftBanner(key: ValueKey(refresh)),
           const _SectionHeader('ACİL'),
           _CardRow(modules: _urgent, strong: true),
           const _SectionHeader('HESAPLA'),
@@ -288,96 +280,6 @@ class _ListCard extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-/// Ana ekranın üstündeki "Vardiyam" kartı: sıradaki işi gösterir.
-class ShiftBanner extends StatefulWidget {
-  const ShiftBanner({super.key});
-
-  @override
-  State<ShiftBanner> createState() => _ShiftBannerState();
-}
-
-class _ShiftBannerState extends State<ShiftBanner> {
-  Shift? _shift;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final s = await ShiftStore().load();
-    if (mounted) setState(() => _shift = s);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final s = _shift;
-    final now = DateTime.now();
-    final String title;
-    final String subtitle;
-    if (s == null) {
-      title = 'Vardiyam';
-      subtitle = 'Bugünün ilaç ve iş hatırlatmalarını kur';
-    } else {
-      final late = s.overdue(now).length;
-      final next = s.upcoming(now);
-      title =
-          'Vardiyam ${hhmm(s.start)}–${hhmm(s.end)}'
-          '${late > 0 ? ' · $late iş gecikti' : ''}';
-      subtitle = next.isEmpty
-          ? '${s.done.length}/${s.tasks.length} iş yapıldı'
-          : 'Sıradaki: ${hhmm(next.first.at)} · ${next.first.bedLabel} · '
-                '${next.first.title}';
-    }
-    final late = s != null && s.overdue(now).isNotEmpty;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-      child: Material(
-        color: late
-            ? theme.colorScheme.errorContainer
-            : theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const ShiftScreen()),
-            );
-            await _load();
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                const Icon(Icons.today, size: 36),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(subtitle, maxLines: 2),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

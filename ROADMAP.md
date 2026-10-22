@@ -296,7 +296,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 ### Sürüm 0.10: "Yeni görünüm"
 - [x] Bordo ve krem renkler (açık ve koyu tema)
 - [x] Bölümlere ayrılmış ana ekran: Acil, Hesapla, Bilgi, Benim
-- [x] Alt menü: Ana sayfa, Ara, Favoriler, Vardiyam
+- [x] Alt menü: Ana sayfa, Ara, Favoriler, Vardiyam (0.10.1: ana sayfadaki tekrarlar kaldırıldı, gecikmiş iş rozeti)
 - [x] Ayarlar: yazı boyutu (Normal, Büyük, Çok büyük) ve tema
 - [x] Yeni uygulama simgesi ve açılış ekranı (tool/gen_icon.py ile üretilir)
 

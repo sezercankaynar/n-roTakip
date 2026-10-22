@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../features/search/favorites.dart';
 import '../features/search/search_index.dart';
 import '../features/search/search_screen.dart';
+import '../features/shift/shift.dart';
 import '../features/shift/shift_screen.dart';
 import 'home_screen.dart';
 
@@ -21,16 +24,42 @@ class _RootShellState extends State<RootShell> {
   /// 0 olan sekme henüz açılmamıştır ve hiç oluşturulmaz.
   final _visits = [1, 0, 0, 0];
 
-  void _select(int i) => setState(() {
-    if (i != _tab) _visits[i]++;
-    _tab = i;
-  });
+  /// Vardiyada zamanı geçmiş iş sayısı (alt menüde rozet olarak).
+  int _late = 0;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLate();
+    _ticker = Timer.periodic(const Duration(minutes: 1), (_) => _loadLate());
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadLate() async {
+    final s = await ShiftStore().load();
+    final n = s?.overdue(DateTime.now()).length ?? 0;
+    if (mounted && n != _late) setState(() => _late = n);
+  }
+
+  void _select(int i) {
+    setState(() {
+      if (i != _tab) _visits[i]++;
+      _tab = i;
+    });
+    _loadLate();
+  }
 
   Widget _page(int i) {
     final v = _visits[i];
     if (v == 0) return const SizedBox.shrink();
     return switch (i) {
-      0 => HomeScreen(refresh: v),
+      0 => const HomeScreen(),
       1 => SearchScreen(key: ValueKey('s$v'), autofocus: false),
       2 => FavoritesScreen(key: ValueKey('f$v')),
       _ => ShiftScreen(key: ValueKey('v$v')),
@@ -47,21 +76,29 @@ class _RootShellState extends State<RootShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: _select,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Ana sayfa',
           ),
-          NavigationDestination(icon: Icon(Icons.search), label: 'Ara'),
-          NavigationDestination(
+          const NavigationDestination(icon: Icon(Icons.search), label: 'Ara'),
+          const NavigationDestination(
             icon: Icon(Icons.star_border),
             selectedIcon: Icon(Icons.star),
             label: 'Favoriler',
           ),
           NavigationDestination(
-            icon: Icon(Icons.today_outlined),
-            selectedIcon: Icon(Icons.today),
+            icon: Badge.count(
+              count: _late,
+              isLabelVisible: _late > 0,
+              child: const Icon(Icons.today_outlined),
+            ),
+            selectedIcon: Badge.count(
+              count: _late,
+              isLabelVisible: _late > 0,
+              child: const Icon(Icons.today),
+            ),
             label: 'Vardiyam',
           ),
         ],

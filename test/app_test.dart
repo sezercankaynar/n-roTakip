@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:norocep/app_settings.dart';
+import 'package:norocep/features/shift/shift.dart';
 import 'package:norocep/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +26,7 @@ void main() {
     expect(find.text('Ölçekler'), findsOneWidget);
     expect(find.text('EKG ve Resüsitasyon'), findsOneWidget);
     expect(find.text('İnfüzyon Hesaplayıcı'), findsOneWidget);
-    expect(find.text('Vardiyam'), findsNWidgets(2)); // kart + alt menü
+    expect(find.text('Vardiyam'), findsOneWidget); // yalnız alt menüde
     expect(find.text('Favoriler'), findsOneWidget);
     expect(settings.disclaimerAccepted, isTrue);
   });
@@ -84,5 +85,36 @@ void main() {
     final again = await AppSettings.load();
     expect(again.textScale, 1.3);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('geciken vardiya işi alt menüde rozet olarak görünür', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'disclaimer_accepted_v1': true});
+    final now = DateTime.now();
+    await ShiftStore().save(
+      Shift(
+        start: now.subtract(const Duration(hours: 2)),
+        end: now.add(const Duration(hours: 6)),
+        tasks: [
+          ShiftTask(
+            id: 1,
+            title: 'Nimodipin',
+            at: now.subtract(const Duration(minutes: 30)),
+          ),
+        ],
+      ),
+    );
+    final settings = await AppSettings.load();
+    await tester.pumpWidget(NoroCepApp(settings: settings));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Ara: ilaç'),
+      findsNothing,
+    ); // arama yalnız alt menüde
+    expect(
+      find.descendant(of: find.byType(Badge), matching: find.text('1')),
+      findsWidgets,
+    );
   });
 }
