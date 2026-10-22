@@ -5,7 +5,10 @@ import 'search_index.dart';
 
 /// Uygulamanın tamamında arama; boşken favorileri gösterir.
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key, this.index});
+  const SearchScreen({super.key, this.index, this.autofocus = true});
+
+  /// Alt menü sekmesinde klavye kendiliğinden açılmaz.
+  final bool autofocus;
 
   /// Testlerde hazır dizin vermek için.
   final Future<List<SearchItem>>? index;
@@ -49,7 +52,7 @@ class _SearchScreenState extends State<SearchScreen> {
         titleSpacing: 0,
         title: TextField(
           controller: _query,
-          autofocus: true,
+          autofocus: widget.autofocus,
           textInputAction: TextInputAction.search,
           decoration: const InputDecoration(
             hintText: 'İlaç, hastalık, ritim, ölçek ara',

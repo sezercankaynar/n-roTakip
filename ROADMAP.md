@@ -293,6 +293,13 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] İlaç sayfalarında infüzyon kartı ve hesaplayıcıya geçiş
 - [x] EKG ve Resüsitasyon: 17 ritim çizimi, tanıma ipucu ve yapılacaklar; adım adım EKG okuma ve hız hesabı; arrest, bradikardi, taşikardi, defibrilasyon/kardiyoversiyon, ROSC ve ilaç sayfaları
 
+### Sürüm 0.10: "Yeni görünüm"
+- [x] Bordo ve krem renkler (açık ve koyu tema)
+- [x] Bölümlere ayrılmış ana ekran: Acil, Hesapla, Bilgi, Benim
+- [x] Alt menü: Ana sayfa, Ara, Favoriler, Vardiyam
+- [x] Ayarlar: yazı boyutu (Normal, Büyük, Çok büyük) ve tema
+- [x] Yeni uygulama simgesi ve açılış ekranı (tool/gen_icon.py ile üretilir)
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması

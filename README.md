@@ -17,6 +17,7 @@ Nöroloji servisi, nöroloji yoğun bakım ve inme ünitesinde çalışan hemşi
 - **Hastalık Kütüphanesi (0.6):** 15 hastalık (iskemik inme, ICH, SAK, TİA, SVST, epilepsi ve status epileptikus, kafa içi basınç artışı, miyastenia gravis, GBS, ALS, MS, menenjit/ensefalit, Parkinson, demans/deliryum, baş ağrıları); gruplu liste ve arama
 - **Hemşirelik ve Hasta Güvenliği (0.5):** 9 hemşirelik tanısı; Morse düşme ve Norton bası yarası hesaplayıcıları; yatak başı yutma taraması, bası yarası evreleri, düşme önlemleri; düzenlenebilir acil kodlar; JCI/SKS hasta güvenliği hedefleri ve SBAR
 - **Hemşirelik bakımı ayrıntıları (0.6.1):** bası yarası evre çizimleri ve risk bölgeleri; ağrı, pozisyon, NG sonda, idrar sondası, ağız bakımı, DVT, fiziksel kısıtlama, güvenli ilaç, izolasyon ve SBAR rehberleri; JCI/SKS denetim soruları ve cevapları
+- **Yeni görünüm (0.10):** bordo/krem tema, bölümlü ana ekran, alt menü, yazı boyutu ayarı, yeni simge
 - **Elimin altında (0.9):** genel arama ve favoriler; infüzyon hesaplayıcı (doz birimleri, yükleme dozu, damla); EKG ritimleri, EKG okuma ve resüsitasyon algoritmaları
 - **Vardiyam (0.8):** vardiya boyunca yatak numarasıyla ilaç ve iş hatırlatmaları, tekrar eden işler, önemli işe erken uyarı, geciken işler, devir özeti; ana ekranda sıradaki iş
 - **Ünite Protokollerim (0.7):** ünitenin kendi akış şemaları, ilaç hazırlama talimatları, tedavi şemaları ve kontrol listeleri; şablonlar, arama, paylaşma ve içe aktarma; yalnızca telefonda saklanır, kişisel veri uyarısı

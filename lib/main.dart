@@ -5,7 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_settings.dart';
 import 'screens/disclaimer_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/root_shell.dart';
+import 'theme.dart';
 
 const appName = 'NöroCep';
 
@@ -74,16 +75,6 @@ class NoroCepApp extends StatelessWidget {
   /// Ayarlar yüklenemediyse hata; uygulama yine de ayarlar kaydedilmeden açılır.
   final Object? startupError;
 
-  ThemeData _theme(Brightness brightness) {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF3949AB),
-        brightness: brightness,
-      ),
-      useMaterial3: true,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AppSettingsScope(
@@ -93,40 +84,52 @@ class NoroCepApp extends StatelessWidget {
         builder: (context, _) => MaterialApp(
           title: appName,
           debugShowCheckedModeBanner: false,
-          theme: _theme(Brightness.light),
-          darkTheme: _theme(Brightness.dark),
+          theme: buildTheme(Brightness.light),
+          darkTheme: buildTheme(Brightness.dark),
           themeMode: settings.themeMode,
           locale: const Locale('tr'),
           supportedLocales: const [Locale('tr')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          builder: (context, child) => startupError == null
-              ? child!
-              : Column(
-                  children: [
-                    Expanded(child: child!),
-                    Material(
-                      color: Colors.orange.shade200,
-                      child: SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Text(
-                            'Ayarlar kaydedilemiyor; tema ve onay seçimi '
-                            'hatırlanmayacak. ($startupError)',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.black,
+          builder: (context, child) {
+            // Kullanıcının seçtiği yazı boyutu telefon ayarının üstüne eklenir.
+            final mq = MediaQuery.of(context);
+            child = MediaQuery(
+              data: mq.copyWith(
+                textScaler: TextScaler.linear(
+                  mq.textScaler.scale(10) / 10 * settings.textScale,
+                ),
+              ),
+              child: child!,
+            );
+            return startupError == null
+                ? child
+                : Column(
+                    children: [
+                      Expanded(child: child),
+                      Material(
+                        color: Colors.orange.shade200,
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              'Ayarlar kaydedilemiyor; tema ve onay seçimi '
+                              'hatırlanmayacak. ($startupError)',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+          },
           home: settings.disclaimerAccepted
-              ? const HomeScreen()
+              ? const RootShell()
               : const DisclaimerScreen(),
         ),
       ),
