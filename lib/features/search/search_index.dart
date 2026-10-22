@@ -14,6 +14,8 @@ import '../exam/pupil_gauge_screen.dart';
 import '../followup/follow_up_screen.dart';
 import '../infusion/infusion.dart';
 import '../infusion/infusion_screen.dart';
+import '../labs/labs.dart';
+import '../labs/labs_screen.dart';
 import '../nihss/nihss_screen.dart';
 import '../nursing/emergency_codes_screen.dart';
 import '../nursing/pressure_injury_screen.dart';
@@ -243,6 +245,23 @@ List<SearchItem> toolItems() => [
     keywords: const ['not', 'talimat'],
     open: (c) => _push(c, const ProtocolsScreen()),
   ),
+  SearchItem(
+    id: 'tool:labs',
+    title: 'Laboratuvar değerleri',
+    section: 'Araç',
+    icon: Icons.science,
+    keywords: const ['lab', 'kritik değer', 'tahlil', 'referans', 'normal'],
+    open: (c) => _push(c, const LabsScreen()),
+  ),
+  for (final t in labTests)
+    SearchItem(
+      id: 'lab:${t.name}',
+      title: t.name,
+      section: 'Laboratuvar · ${t.normalText} ${t.unit}'.trim(),
+      icon: Icons.science,
+      keywords: [...t.aliases, 'lab'],
+      open: (c) => _push(c, LabsScreen(initialQuery: t.name)),
+    ),
   for (final d in infusionDrugs)
     SearchItem(
       id: 'infusion:${d.name}',

@@ -305,6 +305,11 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] Ana sayfa iki bölüm: Hızlı erişim (CPR, EKG, İnfüzyon, Ölçekler) ve Rehberler; Kişisel kısayollar
 - [x] Daha az renk: yalnızca acil (CPR) kartı bordo, diğerleri beyaz kart; yuvarlak simgeler
 
+### Sürüm 0.12: "Laboratuvar"
+- [x] 32 tetkik: normal aralık, kritik değer, değer girince yorum (Normal/Düşük/Yüksek/KRİTİK) ve hemşire notu
+- [x] Nörolojide önemli sınırlar (trombolitik, glukoz, sodyum düzeltme, SAK, hipertonik salin), kritik değer bildirimi
+- [x] Sodyum değişim hızı ve düzeltilmiş kalsiyum hesabı; aramada her tetkik
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması

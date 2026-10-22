@@ -6,6 +6,7 @@ import '../features/drugs/drug_guide_screen.dart';
 import '../features/ecg/ecg_screen.dart';
 import '../features/exam/exam_screen.dart';
 import '../features/infusion/infusion_screen.dart';
+import '../features/labs/labs_screen.dart';
 import '../features/nursing/emergency_codes_screen.dart';
 import '../features/nursing/nursing_screen.dart';
 import '../features/protocols/protocols_screen.dart';
@@ -64,6 +65,12 @@ final _guides = <_Module>[
     'Hazırlama, veriliş, yan etkiler',
     Icons.medication_rounded,
     (_) => const DrugGuideScreen(),
+  ),
+  _Module(
+    'Laboratuvar değerleri',
+    'Normal aralık, kritik değer, yorum',
+    Icons.science_rounded,
+    (_) => const LabsScreen(),
   ),
   _Module(
     'Hastalıklar',
