@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:norocep/features/nursing/emergency_codes.dart';
 import 'package:norocep/features/nursing/emergency_codes_screen.dart';
 import 'package:norocep/features/nursing/nursing_screen.dart';
+import 'package:norocep/features/nursing/pressure_injury_screen.dart';
 import 'package:norocep/features/scales/scale.dart';
 import 'package:norocep/features/scales/scale_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,11 +90,61 @@ void main() {
   });
 
   testWidgets('hemşirelik menüsünden tanı açılır', (tester) async {
-    phone(tester, height: 3000);
+    phone(tester, height: 5000);
     await tester.pumpWidget(const MaterialApp(home: NursingScreen()));
     await tester.tap(find.text('Yutmada bozulma'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Yutma taraması yapılmadan'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  test('altı bası yarası evresi tanımlı', () {
+    expect(pressureStages, hasLength(6));
+    expect(
+      StageDepth.values.map((d) => pressureStages.where((s) => s.depth == d)),
+      everyElement(hasLength(1)),
+    );
+  });
+
+  testWidgets('bası yarası evre şemaları ve bölgeler çizilir', (tester) async {
+    phone(tester, height: 9000);
+    await tester.pumpWidget(const MaterialApp(home: PressureInjuryScreen()));
+    await tester.pumpAndSettle();
+    for (final s in pressureStages) {
+      expect(find.text(s.name), findsOneWidget);
+    }
+    expect(find.byType(CustomPaint), findsWidgets);
+    await tester.tap(find.text('Risk bölgeleri'));
+    await tester.pumpAndSettle();
+    for (final p in riskPositions) {
+      expect(find.text(p.name), findsOneWidget);
+    }
+    expect(find.text('5. Topuk'), findsOneWidget);
+    await tester.tap(find.text('Bakım'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('SSKIN'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('menüden bakım rehberleri ve denetim soruları açılır', (
+    tester,
+  ) async {
+    phone(tester, height: 5000);
+    await tester.pumpWidget(const MaterialApp(home: NursingScreen()));
+    for (final t in [
+      'Fiziksel kısıtlama',
+      'Denetim soruları ve cevapları (JCI, SKS)',
+      'SBAR ile iletişim ve örnekler',
+    ]) {
+      await tester.tap(find.text(t));
+      await tester.pumpAndSettle();
+      expect(find.byType(BackButton), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Bası yarası: evreler (görsel) ve bakım'));
+    await tester.pumpAndSettle();
+    expect(find.text('Evre 1'), findsOneWidget);
   });
 }

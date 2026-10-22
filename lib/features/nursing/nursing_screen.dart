@@ -4,6 +4,7 @@ import '../../content/content_screen.dart';
 import '../scales/scale.dart';
 import '../scales/scale_screen.dart';
 import 'emergency_codes_screen.dart';
+import 'pressure_injury_screen.dart';
 
 const _dir = 'assets/content/hemsirelik/';
 
@@ -17,6 +18,28 @@ const _diagnoses = [
   ('Bası yarası riski', 'bas-yarasi-riski.md'),
   ('Öz bakım eksikliği', 'oz-bakim.md'),
   ('Akut konfüzyon (deliryum)', 'akut-konfuzyon.md'),
+];
+
+const _careGuides = [
+  (Icons.local_drink, 'Yatak başı yutma taraması', 'yutma-taramasi.md'),
+  (
+    Icons.sentiment_dissatisfied,
+    'Ağrı değerlendirmesi',
+    'agri-degerlendirme.md',
+  ),
+  (Icons.hotel, 'İnme hastasında pozisyon', 'inme-pozisyon.md'),
+  (Icons.restaurant, 'NG sonda ve enteral beslenme', 'ngs-beslenme.md'),
+  (Icons.water_drop, 'İdrar sondası bakımı (CAUTI)', 'idrar-sondasi.md'),
+  (Icons.clean_hands, 'Ağız bakımı', 'agiz-bakimi.md'),
+  (Icons.bloodtype, 'DVT önlemleri', 'dvt-onlemleri.md'),
+  (Icons.warning_amber, 'Düşme önlemleri', 'dusme-onlemleri.md'),
+  (Icons.back_hand, 'Fiziksel kısıtlama', 'fiziksel-kisitlama.md'),
+];
+
+const _safetyGuides = [
+  (Icons.medication_liquid, 'Güvenli ilaç uygulama', 'guvenli-ilac.md'),
+  (Icons.masks, 'İzolasyon önlemleri', 'izolasyon.md'),
+  (Icons.forum, 'SBAR ile iletişim ve örnekler', 'sbar-ornekleri.md'),
 ];
 
 class NursingScreen extends StatelessWidget {
@@ -68,20 +91,12 @@ class NursingScreen extends StatelessWidget {
           ),
           header('Bakım rehberleri'),
           tile(
-            Icons.local_drink,
-            'Yatak başı yutma taraması',
-            () => page('yutma-taramasi.md', 'Yutma Taraması'),
-          ),
-          tile(
             Icons.healing,
-            'Bası yarası evreleri',
-            () => page('bas-yarasi-evreleri.md', 'Bası Yarası Evreleri'),
+            'Bası yarası: evreler (görsel) ve bakım',
+            () => push(const PressureInjuryScreen()),
           ),
-          tile(
-            Icons.warning_amber,
-            'Düşme önlemleri',
-            () => page('dusme-onlemleri.md', 'Düşme Önlemleri'),
-          ),
+          for (final (icon, title, file) in _careGuides)
+            tile(icon, title, () => page(file, title)),
           header('Hasta güvenliği'),
           tile(
             Icons.campaign,
@@ -93,6 +108,13 @@ class NursingScreen extends StatelessWidget {
             'Hasta güvenliği hedefleri (JCI, SKS)',
             () => page('jci-hasta-guvenligi.md', 'Hasta Güvenliği Hedefleri'),
           ),
+          tile(
+            Icons.quiz,
+            'Denetim soruları ve cevapları (JCI, SKS)',
+            () => page('jci-sss.md', 'Denetim Soruları'),
+          ),
+          for (final (icon, title, file) in _safetyGuides)
+            tile(icon, title, () => page(file, title)),
           header('Hemşirelik tanıları'),
           for (final (title, file) in _diagnoses)
             tile(Icons.assignment, title, () => page('tanilar/$file', title)),

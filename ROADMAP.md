@@ -268,6 +268,11 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] JCI hasta güvenliği hedefleri ve SKS karşılıkları
 - ✅ **Senin işin:** Kendi hastanendeki kod numaralarını ve uygulamaları karşılaştırmak
 
+### Sürüm 0.6.1: "Hemşirelik bakımı ayrıntıları"
+- [x] Bası yarası ekranı: altı evrenin deri kesiti çizimleri, pozisyonlara göre risk bölgeleri, ayrıntılı önleme ve tedavi (SSKIN, beslenme, evreye göre bakım)
+- [x] Yeni bakım rehberleri: ağrı değerlendirmesi, inmede pozisyon, NG sonda ve enteral beslenme, idrar sondası (CAUTI), ağız bakımı, DVT önlemleri, fiziksel kısıtlama
+- [x] Hasta güvenliği: güvenli ilaç uygulama, izolasyon önlemleri, SBAR örnekleri, JCI/SKS denetim soruları ve örnek cevaplar
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması
