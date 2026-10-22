@@ -261,10 +261,11 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - ✅ **Senin işin:** İçerik onayı
 
 ### Sürüm 0.5: "Hemşirelik ve Hasta Güvenliği" (sonraki 2–3 hafta)
-- [ ] Hemşirelik tanıları ve hastalık kartlarıyla bağlantıları
-- [ ] İtaki, Morse ve Braden ölçekleri (lisans kontrolünden sonra), bası yarası evreleri, yutma taraması
-- [ ] Acil durum kodları (hastaneye göre düzenlenebilir)
-- [ ] JCI hasta güvenliği hedefleri ve SKS karşılıkları
+- [x] Hemşirelik tanıları (9)
+- [x] Morse ve Norton hesaplayıcıları, bası yarası evreleri, yutma taraması
+- [ ] İtaki (kurum formu bekleniyor), Braden (lisans izni gerekiyor)
+- [x] Acil durum kodları (hastaneye göre düzenlenebilir)
+- [x] JCI hasta güvenliği hedefleri ve SKS karşılıkları
 - ✅ **Senin işin:** Kendi hastanendeki kod numaralarını ve uygulamaları karşılaştırmak
 
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"

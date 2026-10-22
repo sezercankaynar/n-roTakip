@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../features/exam/gcs_screen.dart';
 import '../features/exam/mrs_screen.dart';
 import '../features/nihss/nihss_screen.dart';
+import '../features/scales/scale.dart';
+import '../features/scales/scale_screen.dart';
 
 /// Klinik ölçeklerin listesi.
 class ScalesScreen extends StatelessWidget {
@@ -11,10 +13,8 @@ class ScalesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const upcoming = [
-      ('İtaki Düşme Riski Ölçeği', '0.5'),
-      ('Morse Düşme Ölçeği', '0.5'),
-      ('Braden Bası Yarası Ölçeği', '0.5'),
-      ('Yatak başı yutma taraması (GUSS)', '0.5'),
+      ('İtaki Düşme Riski Ölçeği', 'kurum formu bekleniyor'),
+      ('ICH skoru, Hunt-Hess, FOUR', 'sonraki sürüm'),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text('Ölçekler')),
@@ -46,13 +46,35 @@ class ScalesScreen extends StatelessWidget {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (_) => const MrsScreen())),
           ),
+          ListTile(
+            leading: const Icon(Icons.elderly),
+            title: const Text('Morse Düşme Ölçeği'),
+            subtitle: const Text('Düşme riski · 0–125'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ScaleScreen(scale: morseFallScale),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.airline_seat_flat),
+            title: const Text('Norton Bası Yarası Ölçeği'),
+            subtitle: const Text('Bası yarası riski · 5–20'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ScaleScreen(scale: nortonScale),
+              ),
+            ),
+          ),
           const Divider(),
           for (final (name, version) in upcoming)
             ListTile(
               enabled: false,
               leading: const Icon(Icons.schedule),
               title: Text(name),
-              subtitle: Text('Sürüm $version ile gelecek'),
+              subtitle: Text(version),
             ),
         ],
       ),

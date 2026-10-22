@@ -4,6 +4,7 @@ import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
 import '../features/drugs/drug_guide_screen.dart';
 import '../features/exam/exam_screen.dart';
+import '../features/nursing/nursing_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
 import '../main.dart';
 import 'coming_soon_screen.dart';
@@ -59,10 +60,7 @@ final _modules = <_Module>[
     'Hemşirelik',
     Icons.local_hospital,
     const Color(0xFFAD1457),
-    (_) => const ComingSoonScreen(
-      title: 'Hemşirelik ve Hasta Güvenliği',
-      version: '0.5',
-    ),
+    (_) => const NursingScreen(),
   ),
   _Module(
     'Ünite Protokolleri',
