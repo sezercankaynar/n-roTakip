@@ -2,7 +2,7 @@
 title: Morfin
 status: draft
 category: Analjezik
-aliases: opioid, morfin sülfat
+aliases: Steradin, opioid, morfin sülfat
 sources:
   - Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU (PADIS). Crit Care Med. 2018;46(9):e825-e873.
   - Morfin sülfat kısa ürün bilgisi.

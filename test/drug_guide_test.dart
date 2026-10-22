@@ -13,7 +13,7 @@ void main() {
       .toList();
 
   test('ilaç kartları bulunur', () {
-    expect(files.length, greaterThanOrEqualTo(66));
+    expect(files.length, greaterThanOrEqualTo(74));
   });
 
   for (final f in files) {
@@ -58,7 +58,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Kan ve kan ürünleri transfüzyonu'), findsOneWidget);
     expect(find.text('Fenitoin'), findsNothing);
-    final allChip = find.widgetWithText(ChoiceChip, 'Tümü (66)');
+    final allChip = find.widgetWithText(ChoiceChip, 'Tümü (74)');
     await tester.ensureVisible(allChip);
     await tester.pumpAndSettle();
     await tester.tap(allChip);

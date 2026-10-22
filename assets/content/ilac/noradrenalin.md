@@ -1,7 +1,7 @@
 ---
 title: Noradrenalin (norepinefrin)
 status: draft
-category: Vazopressör
+category: Vazopressör ve inotrop
 aliases: norepinefrin, Levophed, Noradrenalin
 sources:
   - Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Crit Care Med. 2021;49(11):e1063-e1143.
