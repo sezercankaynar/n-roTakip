@@ -280,6 +280,13 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] Mesajla paylaşma ve arkadaşın gönderdiği metni içe aktarma
 - [x] Kişisel veri uyarısı (T.C. kimlik no, telefon, hasta adı kalıpları)
 
+### Sürüm 0.8: "Vardiyam"
+- [x] Vardiya başlatma (08–16, 08–20, 20–08, 16–08, 24 saat)
+- [x] Yatak numarasıyla ilaç ve iş hatırlatmaları; hızlı seçim, tekrar (vardiya sonuna kadar), önemli işe 10 dk önce ek bildirim
+- [x] Zamanı geçen / sıradaki / yapıldı listeleri; saate veya yatağa göre görünüm; erteleme
+- [x] Devir özeti (kopyala, paylaş); vardiya bitince liste silinir, unutulursa 12 saat sonra kendiliğinden silinir
+- [x] Ana ekranda sıradaki işi gösteren kart
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması
