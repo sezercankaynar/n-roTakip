@@ -45,7 +45,8 @@ class ContentPage {
   final String body;
 
   static Future<ContentPage> load(String asset, {AssetBundle? bundle}) async {
-    final text = await (bundle ?? rootBundle).loadString(asset);
+    // Önbelleğe alınmaz: sayfalar küçüktür ve her açılışta güncel okunur.
+    final text = await (bundle ?? rootBundle).loadString(asset, cache: false);
     return parse(text, source: asset);
   }
 

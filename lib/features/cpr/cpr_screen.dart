@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../widgets/content_status.dart';
+import '../ecg/ecg_screen.dart';
 import 'cpr_session.dart';
 import 'cpr_sounds.dart';
 
@@ -155,6 +156,13 @@ class _CprScreenState extends State<CprScreen> {
         appBar: AppBar(
           title: const Text('CPR Zamanlayıcı'),
           actions: [
+            IconButton(
+              tooltip: 'EKG ritimleri',
+              icon: const Icon(Icons.show_chart),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const EcgScreen()),
+              ),
+            ),
             IconButton(
               tooltip: 'Geri döndürülebilir nedenler (4H 4T)',
               icon: const Text(

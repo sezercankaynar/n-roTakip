@@ -6,6 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('açılış uyarısı onaylanınca ana ekran açılır', (tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 2.75;
+    addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
     await tester.pumpWidget(NoroCepApp(settings: settings));
@@ -20,6 +23,9 @@ void main() {
 
     expect(find.text('CPR Zamanlayıcı'), findsOneWidget);
     expect(find.text('Ölçekler'), findsOneWidget);
+    expect(find.text('EKG ve Resüsitasyon'), findsOneWidget);
+    expect(find.text('İnfüzyon Hesaplayıcı'), findsOneWidget);
+    expect(find.text('Vardiyam'), findsOneWidget);
     expect(settings.disclaimerAccepted, isTrue);
   });
 

@@ -4,9 +4,12 @@ import '../app_settings.dart';
 import '../features/cpr/cpr_screen.dart';
 import '../features/diseases/disease_library_screen.dart';
 import '../features/drugs/drug_guide_screen.dart';
+import '../features/ecg/ecg_screen.dart';
 import '../features/exam/exam_screen.dart';
+import '../features/infusion/infusion_screen.dart';
 import '../features/nursing/nursing_screen.dart';
 import '../features/protocols/protocols_screen.dart';
+import '../features/search/search_screen.dart';
 import '../features/shift/shift.dart';
 import '../features/shift/shift_screen.dart';
 import '../features/stroke/stroke_center_screen.dart';
@@ -34,6 +37,18 @@ final _modules = <_Module>[
     Icons.monitor_heart,
     const Color(0xFFC62828),
     (_) => const CprScreen(),
+  ),
+  _Module(
+    'EKG ve Resüsitasyon',
+    Icons.show_chart,
+    const Color(0xFFD84315),
+    (_) => const EcgScreen(),
+  ),
+  _Module(
+    'İnfüzyon Hesaplayıcı',
+    Icons.calculate,
+    const Color(0xFF00838F),
+    (_) => const InfusionScreen(),
   ),
   _Module(
     'Ölçekler',
@@ -83,6 +98,7 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
+            const SliverToBoxAdapter(child: HomeSearchBar()),
             const SliverToBoxAdapter(child: ShiftBanner()),
             SliverPadding(
               padding: const EdgeInsets.all(12),

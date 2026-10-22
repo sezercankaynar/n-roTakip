@@ -252,7 +252,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 ### Sürüm 0.3: "İlaçlar ve Muayene" (sonraki 2–3 hafta)
 - [x] İlaç rehberi: 74 ilaç (taslak; hemşire onayı bekleniyor), kategori süzme ve arama
 - [x] Nörolojik muayene rehberi (10 sayfa), GKS, mRS, pupil cetveli
-- [ ] Arama ve favoriler
+- [x] Arama ve favoriler (0.9'da eklendi)
 - ✅ **Senin işin:** İlaç bilgilerini kendi ünitendeki uygulamayla karşılaştırmak
 
 ### Sürüm 0.4: "Hastalık Kütüphanesi" (sonraki 3–4 hafta)
@@ -287,6 +287,12 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [x] Devir özeti (kopyala, paylaş); vardiya bitince liste silinir, unutulursa 12 saat sonra kendiliğinden silinir
 - [x] Ana ekranda sıradaki işi gösteren kart
 
+### Sürüm 0.9: "Elimin altında"
+- [x] Genel arama (ilaç, hastalık, hemşirelik, muayene, resüsitasyon sayfaları, ritimler, ölçekler, araçlar, kendi protokollerim) ve favoriler
+- [x] İnfüzyon hesaplayıcı: dozdan hıza / hızdan doza, 20 ilaç için doz birimi, olağan aralık ve örnek hazırlık, doz tablosu; yükleme dozu (levetirasetam, valproat, fenitoin hız sınırı); mL/sa ve damla hesabı
+- [x] İlaç sayfalarında infüzyon kartı ve hesaplayıcıya geçiş
+- [x] EKG ve Resüsitasyon: 17 ritim çizimi, tanıma ipucu ve yapılacaklar; adım adım EKG okuma ve hız hesabı; arrest, bradikardi, taşikardi, defibrilasyon/kardiyoversiyon, ROSC ve ilaç sayfaları
+
 ### Sürüm 1.0: "Meslektaşlarla Paylaşım"
 - [ ] Bütün içeriğin hemşire onaylı olması
 - [ ] 5–10 meslektaşla deneme (APK paylaşımı) ve geri bildirimlerin toplanması
@@ -297,7 +303,7 @@ Her ilaç için aynı düzende: **Etki mekanizması · Endikasyon · Hazırlanı
 - [ ] Google Play'de yayın (yaklaşık 25 $)
 - [ ] Ek ölçekler: ICH, Hunt-Hess, FOUR (GKS ve mRS 0.4'te eklendi)
 - [x] tPA/tenekteplaz doz hesaplayıcı (ürün sahibinin isteğiyle 0.2.2'de eklendi; iki kişi kontrolü uyarısıyla)
-- [ ] Diğer etkileşimli doz hesaplayıcıları
+- [x] Diğer etkileşimli doz hesaplayıcıları (0.9: infüzyon hesaplayıcı)
 - [ ] **Uygulama güncellenmeden içerik güncelleme:** içerik internetten ücretsiz olarak indirilir, internet yoksa en son indirilen sürüm kullanılır
 - [ ] Bilgi testleri ve vaka senaryoları (eğitim modu, hizmet içi eğitim için)
 - [ ] iPhone sürümü (App Store yaklaşık 99 $/yıl)

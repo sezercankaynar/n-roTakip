@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../content/content_page.dart';
-import '../../content/content_screen.dart';
+import '../infusion/infusion_screen.dart';
+import 'drug_page.dart';
 import '../../widgets/content_status.dart';
 
 const drugAssetDir = 'assets/content/ilac/';
@@ -124,7 +125,18 @@ class _DrugGuideScreenState extends State<DrugGuideScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('İlaç Rehberi')),
+      appBar: AppBar(
+        title: const Text('İlaç Rehberi'),
+        actions: [
+          IconButton(
+            tooltip: 'İnfüzyon hesaplayıcı',
+            icon: const Icon(Icons.calculate),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const InfusionScreen()),
+            ),
+          ),
+        ],
+      ),
       body: FutureBuilder<List<DrugEntry>>(
         future: _drugs,
         builder: (context, snap) {
@@ -183,8 +195,7 @@ class _DrugGuideScreenState extends State<DrugGuideScreen> {
                     : const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) =>
-                        ContentScreen(asset: d.asset, title: d.page.title),
+                    builder: (_) => drugPage(d.asset, d.page.title),
                   ),
                 ),
               ),

@@ -310,6 +310,25 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+/// Protokolü liste ekranı dışından (arama, favoriler) açar; düzenleme
+/// veya silme sonucunu kaydeder.
+Future<void> openProtocol(
+  BuildContext context,
+  UnitProtocol p, {
+  UnitProtocolStore? store,
+}) async {
+  final result = await Navigator.of(context).push<_DetailResult>(
+    MaterialPageRoute(builder: (_) => ProtocolDetailScreen(protocol: p)),
+  );
+  if (result == null) return;
+  final s = store ?? UnitProtocolStore();
+  final items = await s.load()
+    ..removeWhere((e) => e.id == p.id);
+  if (result case _Updated(:final protocol)) items.add(protocol);
+  items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  await s.save(items);
+}
+
 sealed class _DetailResult {}
 
 class _Updated extends _DetailResult {
