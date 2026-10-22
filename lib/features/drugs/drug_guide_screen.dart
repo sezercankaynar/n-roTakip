@@ -11,13 +11,28 @@ const drugAssetDir = 'assets/content/ilac/';
 const drugCategoryOrder = [
   'Trombolitik',
   'Antikoagülan ve antidotlar',
+  'Hemostatik',
   'Antiagregan',
   'Antihipertansif (acil)',
   'Subaraknoid kanama',
   'Kafa içi basınç',
   'Antiepileptik',
   'Nöroimmünoloji',
+  'Parkinson',
   'Resüsitasyon',
+  'Vazopressör',
+  'Sedasyon ve deliryum',
+  'Analjezik',
+  'Antidot',
+  'Antibiyotik ve antiviral',
+  'Antiemetik ve mide koruyucu',
+  'Antihistaminik',
+  'Kortikosteroid',
+  'Sıvı ve kolloid',
+  'Elektrolit ve glukoz',
+  'Kan ve kan ürünleri',
+  'Diüretik',
+  'Endokrin',
 ];
 
 class DrugEntry {
@@ -89,6 +104,9 @@ class _DrugGuideScreenState extends State<DrugGuideScreen> {
   late final Future<List<DrugEntry>> _drugs = loadDrugs();
   final _search = TextEditingController();
 
+  /// Seçili kategori; `null`: tümü.
+  String? _category;
+
   @override
   void initState() {
     super.initState();
@@ -116,7 +134,17 @@ class _DrugGuideScreenState extends State<DrugGuideScreen> {
           if (all == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          final shown = all.where((d) => d.matches(_search.text)).toList();
+          final categories = [
+            for (final c in drugCategoryOrder)
+              if (all.any((d) => d.category == c)) c,
+          ];
+          final shown = all
+              .where(
+                (d) =>
+                    (_category == null || d.category == _category) &&
+                    d.matches(_search.text),
+              )
+              .toList();
           final rows = <Widget>[];
           String? lastCategory;
           for (final d in shown) {
@@ -180,6 +208,23 @@ class _DrugGuideScreenState extends State<DrugGuideScreen> {
                           ),
                     border: const OutlineInputBorder(),
                   ),
+                ),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+                child: Row(
+                  children: [
+                    for (final c in [null, ...categories])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(c ?? 'Tümü (${all.length})'),
+                          selected: _category == c,
+                          onSelected: (_) => setState(() => _category = c),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const Padding(

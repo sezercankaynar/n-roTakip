@@ -13,7 +13,7 @@ void main() {
       .toList();
 
   test('ilaç kartları bulunur', () {
-    expect(files.length, greaterThanOrEqualTo(28));
+    expect(files.length, greaterThanOrEqualTo(66));
   });
 
   for (final f in files) {
@@ -37,7 +37,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(const MaterialApp(home: DrugGuideScreen()));
     await tester.pumpAndSettle();
-    expect(find.text('Trombolitik'), findsOneWidget);
+    expect(find.text('Trombolitik'), findsNWidgets(2)); // düğme + başlık
     expect(find.text('Alteplaz (rt-PA)'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'keppra');
@@ -49,6 +49,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Fenitoin'), findsOneWidget);
     expect(find.text('Diazepam'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '');
+    final bloodChip = find.widgetWithText(ChoiceChip, 'Kan ve kan ürünleri');
+    await tester.ensureVisible(bloodChip);
+    await tester.pumpAndSettle();
+    await tester.tap(bloodChip);
+    await tester.pumpAndSettle();
+    expect(find.text('Kan ve kan ürünleri transfüzyonu'), findsOneWidget);
+    expect(find.text('Fenitoin'), findsNothing);
+    final allChip = find.widgetWithText(ChoiceChip, 'Tümü (66)');
+    await tester.ensureVisible(allChip);
+    await tester.pumpAndSettle();
+    await tester.tap(allChip);
+    await tester.enterText(find.byType(TextField), 'fenitoin');
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Fenitoin'));
     await tester.pumpAndSettle();
