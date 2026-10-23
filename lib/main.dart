@@ -91,21 +91,15 @@ class NoroCepApp extends StatelessWidget {
           supportedLocales: const [Locale('tr')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           builder: (context, child) {
-            // Kullanıcının seçtiği yazı boyutu telefon ayarının üstüne eklenir.
-            final mq = MediaQuery.of(context);
-            child = MediaQuery(
-              data: mq.copyWith(
-                textScaler: TextScaler.linear(
-                  mq.textScaler.scale(10) / 10 * settings.textScale,
-                ),
-              ),
+            final framed = AppFrame(
+              textScale: settings.textScale,
               child: child!,
             );
             return startupError == null
-                ? child
+                ? framed
                 : Column(
                     children: [
-                      Expanded(child: child),
+                      Expanded(child: framed),
                       Material(
                         color: Colors.orange.shade200,
                         child: SafeArea(
@@ -132,6 +126,36 @@ class NoroCepApp extends StatelessWidget {
               ? const RootShell()
               : const DisclaimerScreen(),
         ),
+      ),
+    );
+  }
+}
+
+/// Bütün ekranları saran çerçeve.
+///
+/// - Kullanıcının seçtiği yazı boyutunu telefon ayarının üstüne ekler.
+/// - Yeni Android sürümleri uygulamayı ekranın kenarına kadar çizer;
+///   telefonun alt çubuğu (geri/ana sayfa tuşları), çentik ve yan kenarlar
+///   içeriğin üstüne binmesin diye sayfalar bu alanların dışında tutulur.
+///   Üst kenarı her sayfanın başlık çubuğu kendisi ayarlar.
+class AppFrame extends StatelessWidget {
+  const AppFrame({super.key, required this.textScale, required this.child});
+
+  final double textScale;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: MediaQuery(
+        data: mq.copyWith(
+          textScaler: TextScaler.linear(
+            mq.textScaler.scale(10) / 10 * textScale,
+          ),
+        ),
+        child: SafeArea(top: false, child: child),
       ),
     );
   }
